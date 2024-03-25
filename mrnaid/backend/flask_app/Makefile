@@ -33,7 +33,7 @@ celery-run:
 		LOG_FILE=./logs/logs.log \
 		BACKEND_OBJECTIVES_DATA=../common/objectives/data \
 		PYTHONPATH=../common:../common/objectives:../common/constraints\
-		celery -A tasks worker --loglevel=info
+		python -m celery -A tasks worker --loglevel=info
 
 flower-run:
 	$(CONDA_ACTIVATE); \
