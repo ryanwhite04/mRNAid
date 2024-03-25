@@ -26,6 +26,12 @@ uwsgi-run:
 		PYTHONPATH=../common:../common/objectives:../common/constraints\
 		uwsgi --ini app.ini:uwsgi-no-docker
 
+flask-run:
+	$(CONDA_ACTIVATE); \
+		CELERY_BROKER_URL=redis://127.0.0.1:6379 \
+		CELERY_RESULT_BACKEND=redis://127.0.0.1:6379 \
+		python -m flask run
+
 celery-run:
 	$(CONDA_ACTIVATE); \
 		CELERY_BROKER_URL=redis://127.0.0.1:6379 \
