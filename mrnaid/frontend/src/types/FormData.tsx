@@ -20,6 +20,7 @@ export type FormData = {
   entropyWindowSize: number
   avoidMotifs: string[]
   organism: string
+  optimizationAlgorithm: string
 }
 
 export type FormParamsCombined = RequestData & FormData

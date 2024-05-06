@@ -26,6 +26,7 @@ const exampleForm: Partial<FormData> = {
   gcWindowSize: 100,
   entropyWindowSize: 30,
   avoidMotifs: ['EcoRI'],
+  optimizationAlgorithm: 'nil',
 }
 
 type FormOuterProps = {
@@ -53,6 +54,7 @@ class Index extends React.PureComponent<FormInnerProps, CompState> {
 
     form.validateFields((error: Array<string>, values: FormData) => {
       if (!error) {
+        // console.log(values)
         onSubmit(values)
       } else {
         message.error('Validation failed')
@@ -192,6 +194,15 @@ class Index extends React.PureComponent<FormInnerProps, CompState> {
         </FormSection>
 
         <FormSection index={2} title="Optimization parameters">
+          <Form.Item label="Stability Option">
+            {getFieldDecorator('optimizationAlgorithm', {initialValue: 'nil'})(
+            <Select style={{ minWidth: '300px', width: 'auto' }}>
+              <Select.Option value="nil">None</Select.Option>
+              <Select.Option value="arwa">ARWA (Adaptive Random Walk Algorithm)</Select.Option>
+            </Select>,
+            )}
+          </Form.Item>
+
           <Form.Item label="Codon Usage" required>
             {getFieldDecorator('organism', {initialValue: 'h_sapiens'})(
               <Radio.Group>
