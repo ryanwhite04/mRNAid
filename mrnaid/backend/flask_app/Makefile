@@ -45,4 +45,4 @@ flower-run:
 	$(CONDA_ACTIVATE); \
 		CELERY_BROKER_URL=redis://127.0.0.1:6379 \
 		CELERY_RESULT_BACKEND=redis://127.0.0.1:6379 \
-        celery flower --port=5566
+        python -m celery flower --port=5566
