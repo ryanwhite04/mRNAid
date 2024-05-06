@@ -41,6 +41,9 @@ th.PASFragmentSeqCol {
 .ant-popover-placement-top > .ant-popover-content > .ant-popover-arrow{
     left: 38% !important;
 }
+.ant-select-dropdown-menu{
+    width: 100%;
+}
 .question-circle{
     color:#269487;
     font-size: 17px !important;
