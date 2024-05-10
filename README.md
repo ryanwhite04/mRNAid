@@ -81,21 +81,36 @@ The tool will be available at [http://localhost/](http://localhost/)
 
 To be able to run the tool without `docker` you will need to run frontend and backend separately.
 
-#### Backend
-
 You need [Conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/download.html) or one of 
 the alternatives ([Miniconda](https://docs.conda.io/en/latest/miniconda.html), [Miniforge](https://github.com/conda-forge/miniforge)) 
 being installed.
 
-First, navigate to the `./mrnaid/backend/flask_app/` directory and execute following commands:
+* cd to the root directory `/mRNAid'
 
+* use conda to create a virtual environment:
 ```bash
-cd ./mrnaid/backend/flask_app/
+conda create --name mRNAid
 ```
+the name "mRNAid" can be changed, but if you change it, you need to modify those files 
+which refers to it. So just use "mRNAid" if you are not quite sure about it.
 
-* Create a new virtual environment:
+* after create the virtual environment, activate it by:
+```bash 
+conda activate mRNAid
+```
+make sure you see the name `mRNAid` in front of the command line
 
+* in the root directory "/mRNAid", run command:
 ```bash
+pip install -r requirements.txt
+```
+It will install some dependecies such as 'RNA', this step can't be ingored.
+
+#### Backend
+* Cd to the `./mrnaid/backend/flask_app/` directory
+
+* Create a new virtual environment:(not necessary ,just ignore this step since we have created one)
+```bash 
 make env-create
 ```
 
@@ -105,9 +120,11 @@ make env-create
 make redis-install
 ```
 
-- In separate terminals execute following commands:
+- In separate terminals execute following commands:(the order doesn't matter, they are independent)
     1. Start redis server: `make redis-run`
-    2. Start uwsgi server: `make uwsgi-run`
+	2. Start the server, there are two choices:
+		2.1 Start uwsgi server: `make uwsgi-run` for product environment
+		2.2 Start the flask sever: `make flask-run`
     3. Start celery: `make celery-run`
 
 - After these steps are executed, the job submission is available at the "optimize" API url: http://localhost/api/v1/optimize.
@@ -163,6 +180,17 @@ Install [Node.js](https://nodejs.org/en/download/) and [Nginx](https://www.nginx
 web server.
 
 * Navigate to `frontend` directory
+
+you could either build a package or run it directly:
+
+* To run it directly, just run the command:
+```bash
+npm start
+```
+after running, there will be some hints about the address and port in the command lines.
+You can directly visit that website.
+
+or you can chose to build a package and use nginx
 * Build a package:
 
 ```bash
