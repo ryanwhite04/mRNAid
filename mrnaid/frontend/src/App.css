@@ -117,7 +117,8 @@ body {
 }
 
 .ResultTable .ant-table-thead > tr > th {
-  color: #758fce;
+  /* color: #758fce; */
+  color: #ceb052;
   text-align: center;
   word-break: break-word;
 }
@@ -148,10 +149,12 @@ body {
 }
 
 .ant-layout-header  {
-  background-color: #758fce;
+  /* background-color: #758fce; */
+  background-color: #ceb052;
 }
 .ant-layout-header >ul {
-  background-color: #758fce;
+  /* background-color: #758fce; */
+  background-color: #ceb052;
 }
 .ant-menu-item {
   color: #f1f5f7;

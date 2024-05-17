@@ -10,7 +10,8 @@
 .FormSectionTitle .ant-avatar {
   width: 30px;
   height: 30px;
-  background: #758fce;
+  /* background: #758fce; */
+  background: #ceb052;
   font-size: 18px;
 }
 
@@ -18,4 +19,14 @@
   margin-bottom: 0;
   line-height: 30px;
   color: #334d5b;
+}
+
+.ant-steps-item-process .ant-steps-item-icon {
+  background: #ffb309;
+  border-color: #ffb309;
+}
+
+.ant-btn-primary {
+  background-color: #ffb309;
+  border-color: #ffb309;
 }
