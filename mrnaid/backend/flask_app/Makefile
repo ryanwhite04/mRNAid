@@ -38,7 +38,7 @@ celery-run:
 		CELERY_RESULT_BACKEND=redis://127.0.0.1:6379 \
 		LOG_FILE=./logs/logs.log \
 		BACKEND_OBJECTIVES_DATA=../common/objectives/data \
-		PYTHONPATH=../common:../common/objectives:../common/constraints\
+		PYTHONPATH=../common:../common/objectives:../common/constraints:../common/arw_mrna/src \
 		python -m celery -A tasks worker --loglevel=info
 
 flower-run:
@@ -46,3 +46,7 @@ flower-run:
 		CELERY_BROKER_URL=redis://127.0.0.1:6379 \
 		CELERY_RESULT_BACKEND=redis://127.0.0.1:6379 \
         python -m celery flower --port=5566
+
+react-run:
+	cd ../../frontend; \
+	npm start
