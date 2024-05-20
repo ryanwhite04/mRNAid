@@ -1,7 +1,6 @@
 import json
 
-from flask import Flask
-from flask import request
+from flask import Flask, request, render_template
 from tasks import optimization_evaluation_task, ARWA
 from flask_cors import CORS
 from utils.Exceptions import EmptySequenceError, SequenceLengthError, NoGCError, EntropyWindowError, \
@@ -13,9 +12,7 @@ import protein
 import awalk
 import vienna
 import objective_functions as objectives
-import importlib.util
-import sys
-from pathlib import Path
+from os import getcwd, path
 
 app = Flask(__name__)
 CORS(app)
@@ -23,7 +20,16 @@ CORS(app)
 # Setting up a logger
 logger = MyLogger(__name__)
 
+# Determine if we are running from the project root or from within the flask app
+cwd = getcwd()
+if path.basename(cwd) == 'flask_app':
+    project_root = path.abspath(path.join(cwd, '../../..'))
+else:
+    project_root = path.abspath(cwd)
 
+@app.route('/arwa_sync', methods=['GET'])
+def arwa_sync_form():
+    return render_template('arwa_sync.html')
 
 #     ap.add_argument('--steps', type=int, default=1000,
 #                     help='Number of steps in the adaptive walk')
@@ -68,15 +74,32 @@ logger = MyLogger(__name__)
 #     # Create walk config
 #     walk_config = awalk.WalkConfig(
 #         args.aa_seq, freq_table, obj, args.steps, init_cds=init_cds, verbose=args.verbose)
-
 @app.route('/api/v1/arwa_sync', methods=['POST'])
 def awra_sync():
     logger.info(10 * '#' + 'NEW REQUEST' + 10 * '#' + 'SYNC')
     try:
-        args = json.loads(request.get_data())
+        if request.content_type == 'application/json':
+            args = request.get_json()
+        else:
+            args = request.form.to_dict()
+            args["cai_threshold"] = float(args["cai_threshold"])
+            args["cai_exp_scale"] = float(args["cai_exp_scale"])
+            args["verbose"] = args["verbose"] == "true"
+            args["steps"] = int(args["steps"])
         cai_threshold = args["cai_threshold"]
         cai_exp_scale = args["cai_exp_scale"]
-        freq_table_path = f"mrnaid/backend/common/arw_mrna/codon_tables/{args['freq_table_path']}"
+        print("cwd: ", getcwd())
+        # Determine the base directory for the codon tables
+        if path.exists('mrnaid/backend/common/arw_mrna/codon_tables'):
+            base_dir = 'mrnaid/backend/common/arw_mrna/codon_tables'
+        elif path.exists('../common/arw_mrna/codon_tables'):
+            base_dir = '../common/arw_mrna/codon_tables'
+        else:
+            raise FileNotFoundError("Cannot find the codon tables directory")
+
+        # Construct the path to the frequency table
+        freq_table_path = path.join(base_dir, args['freq_table_path'])
+        print(freq_table_path)
         stability = args["stability"]
         verbose = args["verbose"]
         freq_table = protein.CodonFrequencyTable(freq_table_path)
