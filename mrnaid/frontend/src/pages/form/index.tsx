@@ -1,4 +1,5 @@
 import * as React from 'react'
+import { useState } from 'react';
 import {Button, Form, Input, message, Select, InputNumber, Popover, Icon, Radio, Switch, Row, Col} from 'antd'
 
 import FileUploadInput from 'src/components/FileUploadInput'
@@ -27,7 +28,10 @@ const exampleForm: Partial<FormData> = {
   entropyWindowSize: 30,
   avoidMotifs: ['EcoRI'],
   optimizationAlgorithm: 'nil',
+  importedCodonTable: 'nil',
 }
+
+var selectedValue = 'h_sapiens'
 
 type FormOuterProps = {
   disabled: boolean
@@ -83,6 +87,9 @@ class Index extends React.PureComponent<FormInnerProps, CompState> {
       // do nothing
     })
   }
+  handleRadioChange = (e: any)  => {
+    selectedValue = e.target.value;
+  };
 
   matchCodonUsage = (
     <div>
@@ -205,12 +212,21 @@ class Index extends React.PureComponent<FormInnerProps, CompState> {
 
           <Form.Item label="Codon Usage" required>
             {getFieldDecorator('organism', {initialValue: 'h_sapiens'})(
-              <Radio.Group>
+              <Radio.Group onChange={ this.handleRadioChange }>
                 <Radio.Button value="h_sapiens">Homo Sapiens</Radio.Button>
                 <Radio.Button value="m_musculus">Mus musculus</Radio.Button>
+                <Radio.Button value="custom">Custom Input</Radio.Button>
               </Radio.Group>,
             )}
           </Form.Item>
+
+          {selectedValue === 'custom' && (
+            <Form.Item label="Custom Codon Usage" required>
+              {getFieldDecorator('importedCodonTable', {initialValue: ''})(
+                <Input placeholder="Enter custom codon usage" />
+              )}
+            </Form.Item>
+          )}
 
           <Form.Item label="Codon Usage Frequency Threshold Percentage">
             {getFieldDecorator('codonUsageFrequencyThresholdPct', {

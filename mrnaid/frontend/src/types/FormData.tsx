@@ -21,6 +21,7 @@ export type FormData = {
   avoidMotifs: string[]
   organism: string
   optimizationAlgorithm: string
+  importedCodonTable: string
 }
 
 export type FormParamsCombined = RequestData & FormData
