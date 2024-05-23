@@ -24,6 +24,7 @@ export const formDataToRequest = (formData: FormData) => ({
     number_of_sequences: Number(formData.numberOfSequences),
     entropy_window: Number(formData.entropyWindowSize),
     stability: String(formData.stability),
+    algorithm: String(formData.algorithm),
   },
   uridine_depletion: Boolean(formData.uridineDepletion),
   optimization_criterion: String(formData.optimizationCriterion),
@@ -56,6 +57,7 @@ export const getInputData = (inputData: InputParameters) => ({
   fileName: inputData.filename,
   avoidMotifs: inputData.avoid_motifs,
   stability: inputData.stability,
+  algorithm: inputData.algorithm,
 })
 
 export const dataToFormData = (formData: FormData) => {
@@ -82,6 +84,7 @@ export const dataToFormData = (formData: FormData) => {
     fileName: 'results',
     avoidMotifs: requestData.avoidMotifs,
     stability: requestData.stability,
+    algorithm: requestData.algorithm,
   }
 }
 

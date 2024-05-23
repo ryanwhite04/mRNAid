@@ -27,6 +27,7 @@ const exampleForm: Partial<FormData> = {
   entropyWindowSize: 30,
   avoidMotifs: ['EcoRI'],
   stability: 'none',
+  algorithm: 'none',
 }
 
 type FormOuterProps = {
@@ -194,13 +195,22 @@ class Index extends React.PureComponent<FormInnerProps, CompState> {
         </FormSection>
 
         <FormSection index={2} title="Optimization parameters">
-          <Form.Item label="Stability Option">
-            {getFieldDecorator('stability', {initialValue: 'none'})(
+        <Form.Item label="Optimization Algorithm">
+            {getFieldDecorator('algorithm', {initialValue: 'none'})(
             <Select style={{ minWidth: '300px', width: 'auto' }}>
               <Select.Option value="none">None</Select.Option>
-              <Select.Option value="aup">aup</Select.Option>
-              <Select.Option value="efe">efe</Select.Option>
+              <Select.Option value="arwa">Adaptive Random Walk Algorithm</Select.Option>
             </Select>,
+            )}
+          </Form.Item>
+
+          <Form.Item label="Stability Option">
+            {getFieldDecorator('stability', {initialValue: 'none'})(
+            <Radio.Group>
+              <Radio.Button value="none">None</Radio.Button>
+              <Radio.Button value="aup">aup</Radio.Button>
+              <Radio.Button value="efe">efe</Radio.Button>
+            </Radio.Group>,
             )}
           </Form.Item>
 

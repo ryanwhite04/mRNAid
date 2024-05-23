@@ -21,6 +21,7 @@ export type FormData = {
   avoidMotifs: string[]
   organism: string
   stability: string
+  algorithm: string
 }
 
 export type FormParamsCombined = RequestData & FormData
