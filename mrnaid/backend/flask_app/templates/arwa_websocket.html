@@ -1,0 +1,263 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ARWA Sync Form</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+        }
+        
+        h1 {
+            text-align: center;
+        }
+        
+        form, #chart-container, #cds-container {
+            width: 60%;
+            max-width: 600px;
+            margin: 20px auto;
+            padding: 20px;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            background-color: #f9f9f9;
+        }
+        
+        label, input, select, textarea {
+            display: block;
+            width: 100%;
+            margin-bottom: 10px;
+            padding: 10px;
+            font-size: 1rem;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+            box-sizing: border-box;
+        }
+        
+        button, input[type="submit"] {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+        }
+        
+        button:hover, input[type="submit"]:hover {
+            background-color: #0056b3;
+        }
+        
+        #chart-container {
+            padding: 0;
+            margin-top: 0;
+        }
+        
+        #progressChart {
+            width: 100%;
+            height: 300px;
+        }
+        
+        #cds-container {
+            text-align: center;
+        }
+        
+        #cds {
+            text-align: left;
+            word-wrap: break-word;
+            background-color: #fff;
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        #test {
+            width: 100px;
+            margin: 20px auto;
+            padding: 10px;
+            font-size: 1rem;
+            border: none;
+            border-radius: 4px;
+            background-color: #007BFF;
+            color: white;
+            cursor: pointer;
+            display: block;
+        }
+        
+        #test:hover {
+            background-color: #0056b3;
+        }
+        
+    </style>
+</head>
+<body>
+    <h1>ARWA Sync Request Form</h1>
+    <form id="arwaForm">
+        <label for="cai_threshold">CAI Threshold:</label>
+        <input type="number" id="cai_threshold" name="cai_threshold" step="any" required>
+
+        <label for="cai_exp_scale">CAI Exp Scale:</label>
+        <input type="number" id="cai_exp_scale" name="cai_exp_scale" step="any" required>
+
+        <label for="freq_table_path">Frequency Table Path:</label>
+        <select id="freq_table_path" name="freq_table_path" required>
+            <option value="homosapiens.txt">Homosapiens</option>
+            <option value="mouse.txt">Mouse</option>
+        </select>
+
+        <label for="stability">Stability:</label>
+        <select id="stability" name="stability" required>
+            <option value="aup">AUP</option>
+            <option value="efe">EFE</option>
+            <option value="none">None</option>
+        </select>
+
+        <label for="verbose">Verbose:</label>
+        <select id="verbose" name="verbose" required>
+            <option value="true">True</option>
+            <option value="false">False</option>
+        </select>
+
+        <label for="aa_seq">Amino Acid Sequence:</label>
+        <textarea id="aa_seq" name="aa_seq" required></textarea>
+
+        <label for="steps">Steps:</label>
+        <input type="number" id="steps" name="steps" required>
+
+        <input type="submit" value="Submit">
+    </form>
+
+    <button id="test">Test</button>
+
+    <div id="chart-container">
+        <canvas id="progressChart"></canvas>
+    </div>
+
+    <div id="cds-container">
+        <h2>Current Step: <span id="currentStep">0</span></h2>
+        <h2>Current CDS</h2>
+        <div id="cds"></div>
+    </div>
+
+    <script>
+        document.addEventListener("DOMContentLoaded", () => {
+            const socket = io();
+            let progressChart;
+            const progressData = {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Fitness',
+                        borderColor: 'rgba(75, 192, 192, 1)',
+                        backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                        data: []
+                    },
+                    {
+                        label: 'Best Fitness',
+                        borderColor: 'rgba(255, 99, 132, 1)',
+                        backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                        data: []
+                    }
+                ]
+            };
+
+            const ctx = document.getElementById('progressChart').getContext('2d');
+            progressChart = new Chart(ctx, {
+                type: 'line',
+                data: progressData,
+                options: {
+                    scales: {
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Step'
+                            }
+                        },
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Fitness'
+                            }
+                        }
+                    }
+                }
+            });
+
+            socket.on('connect', () => {
+                console.log('Connected to server');
+            });
+
+            socket.on('arwa_sync_progress', (data) => {
+                console.log('Progress:', data);
+                updateChart(data);
+                if (data.type === 'new_cds' || data.type === 'final') {
+                    updateCDS(data.cds);
+                }
+                updateStep(data.step);
+            });
+
+            socket.on('arwa_sync_error', (data) => {
+                console.error('Error:', data.error);
+                // Handle the error
+            });
+
+            function updateChart(data) {
+                if (data.type === 'progress' || data.type === 'new_cds') {
+                    progressData.labels.push(data.step);
+                    progressData.datasets[0].data.push(data.fitness);
+                    progressData.datasets[1].data.push(data.best_fitness);
+                    progressChart.update();
+                }
+            }
+
+            function updateCDS(cds) {
+                const cdsContainer = document.getElementById('cds');
+                cdsContainer.innerHTML = cds.join(', ');
+            }
+
+            function updateStep(step) {
+                const currentStepElement = document.getElementById('currentStep');
+                currentStepElement.textContent = step;
+            }
+
+            function resetChart() {
+                progressData.labels.length = 0;
+                progressData.datasets[0].data.length = 0;
+                progressData.datasets[1].data.length = 0;
+                progressChart.update();
+            }
+
+            document.getElementById('arwaForm').addEventListener('submit', (event) => {
+                event.preventDefault();
+                resetChart();
+                updateStep(0);
+                const formData = new FormData(event.target);
+                const requestData = Object.fromEntries(formData.entries());
+                requestData.cai_threshold = parseFloat(requestData.cai_threshold);
+                requestData.cai_exp_scale = parseFloat(requestData.cai_exp_scale);
+                requestData.steps = parseInt(requestData.steps, 10);
+                socket.emit('arwa_websocket', requestData);
+            });
+
+            document.getElementById('test').addEventListener('click', () => {
+                document.getElementById('cai_threshold').value = 0.9;
+                document.getElementById('cai_exp_scale').value = 1.0;
+                document.getElementById('freq_table_path').value = "homosapiens.txt";
+                document.getElementById('stability').value = "efe";
+                document.getElementById('verbose').value = true;
+                document.getElementById('aa_seq').value = "MVSKGEELFTGVVPILVELDGDVNGH";
+                document.getElementById('steps').value = 100;
+            });
+        });
+    </script>
+</body>
+</html>
