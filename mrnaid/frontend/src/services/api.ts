@@ -23,7 +23,7 @@ export const formDataToRequest = (formData: FormData) => ({
     organism: String(formData.organism),
     number_of_sequences: Number(formData.numberOfSequences),
     entropy_window: Number(formData.entropyWindowSize),
-    optimizationAlgorithm: String(formData.optimizationAlgorithm),
+    stability: String(formData.stability),
   },
   uridine_depletion: Boolean(formData.uridineDepletion),
   optimization_criterion: String(formData.optimizationCriterion),
@@ -55,7 +55,7 @@ export const getInputData = (inputData: InputParameters) => ({
   entropyWindowSize: inputData.entropy_window,
   fileName: inputData.filename,
   avoidMotifs: inputData.avoid_motifs,
-  optimizationAlgorithm: inputData.optimizationAlgorithm,
+  stability: inputData.stability,
 })
 
 export const dataToFormData = (formData: FormData) => {
@@ -81,7 +81,7 @@ export const dataToFormData = (formData: FormData) => {
     entropyWindowSize: requestData.entropyWindowSize,
     fileName: 'results',
     avoidMotifs: requestData.avoidMotifs,
-    optimizationAlgorithm: requestData.optimizationAlgorithm,
+    stability: requestData.stability,
   }
 }
 

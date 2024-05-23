@@ -63,7 +63,7 @@ export type InputParameters = {
   entropy_window: string
   number_of_sequences: number
   precise_MFE_algorithm: boolean
-  optimizationAlgorithm: string
+  stability: string
 }
 
 export type RequestData = {
