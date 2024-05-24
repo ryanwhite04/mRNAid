@@ -2,6 +2,7 @@ import json
 
 from flask import Flask, request, render_template
 from tasks import optimization_evaluation_task, ARWA
+from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 from utils.Exceptions import EmptySequenceError, SequenceLengthError, NoGCError, EntropyWindowError, \
     NumberOfSequencesError, WrongCharSequenceError, RangeError, SpeciesError
@@ -13,8 +14,11 @@ import awalk
 import vienna
 import objective_functions as objectives
 from os import getcwd, path
+import smtplib
+from email.mime.text import MIMEText
 
 app = Flask(__name__)
+socketio = SocketIO(app)
 CORS(app)
 
 # Setting up a logger
@@ -26,6 +30,24 @@ if path.basename(cwd) == 'flask_app':
     project_root = path.abspath(path.join(cwd, '../../..'))
 else:
     project_root = path.abspath(cwd)
+
+def send_email(subject, body, recipient):
+    
+    # Use the email configuration from email_config.py
+    
+    from email_config import email_server, email_port, gmail_username, gmail_password
+    sender = gmail_username
+    msg = MIMEText(body)
+    msg["From"] = sender
+    msg["To"] = recipient
+    msg["Subject"] = subject
+
+    with smtplib.SMTP(email_server, email_port) as server:
+        server.starttls()
+        server.login(gmail_username, gmail_password)
+        server.sendmail(sender, recipient, msg.as_string())
+
+    print("Email sent successfully!")
 
 @app.route('/arwa_sync', methods=['GET'])
 def arwa_sync_form():
@@ -145,6 +167,80 @@ def awra_sync():
         logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
         return json.dumps({'error': str(e)}), 500
 
+@app.route('/arwa_websocket', methods=['GET'])
+def arwa_websocket():
+    return render_template('arwa_websocket.html')
+
+def format_args(args):
+    # for printing args nicely in email
+    return f"""
+        CAI Threshold: {args["cai_threshold"]}
+        CAI Exp Scale: {args["cai_exp_scale"]}
+        Species: {args["freq_table_path"]}
+        Stability: {args["stability"]}
+        Amino Acids Sequence: {args["aa_seq"]}
+        Steps: {args["steps"]}
+        
+    """
+@socketio.on('arwa_websocket')
+def handle_arwa_sync(args):
+    try:
+        cai_threshold = float(args["cai_threshold"])
+        cai_exp_scale = float(args["cai_exp_scale"])
+        stability = args["stability"]
+        verbose = True
+        print("cwd: ", getcwd())
+        # Determine the base directory for the codon tables
+        if path.exists('mrnaid/backend/common/arw_mrna/codon_tables'):
+            base_dir = 'mrnaid/backend/common/arw_mrna/codon_tables'
+        elif path.exists('../common/arw_mrna/codon_tables'):
+            base_dir = '../common/arw_mrna/codon_tables'
+        else:
+            raise FileNotFoundError("Cannot find the codon tables directory")
+
+        # Construct the path to the frequency table
+        freq_table_path = path.join(base_dir, args['freq_table_path'])
+        print(freq_table_path)
+        freq_table = protein.CodonFrequencyTable(freq_table_path)
+        obj_config = objectives.CAIThresholdObjectiveConfig(
+            freq_table,
+            cai_threshold,
+            cai_exp_scale,
+            verbose=verbose
+        )
+
+        # Get obj function
+        if stability == 'aup':
+            obj = objectives.make_cai_and_aup_obj(obj_config)
+        elif stability == 'efe':
+            obj = objectives.make_cai_and_efe_obj(obj_config)
+        elif stability == 'none':
+            obj = objectives.make_cai_threshold_obj(obj_config)
+        
+        init_cds = None
+        load_path = args.get("load_path")
+        if load_path:
+            with open(load_path, "rb") as f:
+                init_cds = pickle.load(f).cds
+            
+        # Create walk config
+        aa_seq = args["aa_seq"]
+        steps = int(args["steps"])
+        walk_config = awalk.WalkConfig(
+            aa_seq, freq_table, obj, steps, init_cds=init_cds, verbose=verbose)
+
+        for update in awalk.adaptive_random_walk_generator(walk_config):
+            emit('arwa_sync_progress', update)
+            # Send an email when the task is complete
+            if update["type"] == "final" and args["email"]:
+                subject = "Task Complete"
+                body = f"{format_args(args)}\n\nCDS: {update['cds']}\nFitness: {update['fitness']}"
+                send_email(subject, body, args["email"])
+                
+    except Exception as e:
+        logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
+        emit('arwa_sync_error', {'error': str(e)})
+    
 @app.route('/api/v1/arwa', methods=['POST'])
 def arwa():
     logger.info(10 * '#' + 'NEW REQUEST' + 10 * '#')
