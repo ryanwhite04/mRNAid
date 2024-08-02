@@ -12,3 +12,5 @@ example.json
 build/
 dist/
 .ipynb_checkpoints
+.vscode
+*.pdf
