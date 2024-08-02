@@ -193,7 +193,12 @@
                 console.log('Connected to server');
             });
 
-            socket.on('arwa_sync_progress', (data) => {
+            socket.on('arwa_sync_progress', (response) => {
+                if (response.status == "SUCCESS") {
+                    console.log('Success:', response.result);
+                    return;
+                }
+                const data = response.result;
                 console.log('Progress:', data);
                 updateChart(data);
                 if (data.type === 'new_cds' || data.type === 'final') {
@@ -202,7 +207,8 @@
                 updateStep(data.step);
             });
 
-            socket.on('arwa_sync_error', (data) => {
+            socket.on('arwa_sync_error', (response) => {
+                const data = response.result;
                 console.error('Error:', data.error);
                 // Handle the error
             });
@@ -242,7 +248,7 @@
                 requestData.cai_threshold = parseFloat(requestData.cai_threshold);
                 requestData.cai_exp_scale = parseFloat(requestData.cai_exp_scale);
                 requestData.steps = parseInt(requestData.steps, 10);
-                socket.emit('arwa_websocket', requestData);
+                socket.emit('arwa_websocket_celery', requestData);
             });
 
             document.getElementById('test').addEventListener('click', () => {

@@ -1,7 +1,7 @@
 import json
 
 from flask import Flask, request, render_template
-from tasks import optimization_evaluation_task, ARWA
+from tasks import optimization_evaluation_task, ARWA, arwa_generator_task
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 from utils.Exceptions import EmptySequenceError, SequenceLengthError, NoGCError, EntropyWindowError, \
@@ -182,6 +182,20 @@ def format_args(args):
         Steps: {args["steps"]}
         
     """
+
+@socketio.on('arwa_websocket_celery')
+def handle_arwa_websocket_celery(args):
+    def on_message(body):
+        emit('arwa_sync_progress', body)
+    try:
+        print(args)
+        args["verbose"] = True
+        task = arwa_generator_task.delay(args)
+        task.get(on_message=on_message, propagate=False)
+    except Exception as e:
+        logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
+        emit('arwa_sync_error', {'error': str(e)})
+        
 @socketio.on('arwa_websocket')
 def handle_arwa_sync(args):
     try:
@@ -247,7 +261,8 @@ def arwa():
     try:
         parameters = json.loads(request.get_data())
         logger.debug('Sequences are received from Parser')
-        task = ARWA.delay(10)
+        task = arwa_generator_task.delay(parameters)
+        print(task.get(on_message=print, propagate=False))
         return json.dumps({'task_id': task.id}), 200
     except Exception as e:
         logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
