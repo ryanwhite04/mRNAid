@@ -8,8 +8,7 @@ import protein
 from awalk import adaptive_random_walk, WalkConfig
 def get_arwa_task(id):
     url = f"http://localhost:5000/api/v1/status/{id}"
-    response = get(url)
-    print(response.text)
+    return get(url)
 
 def post_arwa_async():
     url = "http://localhost:5000/api/v1/arwa"
@@ -18,15 +17,14 @@ def post_arwa_async():
     }
     data = {
         "aa_seq": "MVSKGEELFTGVVPILVELDGDVNGH",
-        "steps": 100,
+        "steps": 10,
         "verbose": True,
         "stability": "efe",
         "cai_exp_scale": 1.0,
         "cai_threshold": 0.9,
         "freq_table_path": "homosapiens.txt",
     }
-    response = post(url, headers=headers, json=data)
-    print(response.text)
+    return post(url, headers=headers, json=data).json()
 
 def post_arwa_sync():
     url = "http://localhost:5000/api/v1/arwa_sync"
