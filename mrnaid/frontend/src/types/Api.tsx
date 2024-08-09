@@ -64,6 +64,7 @@ export type InputParameters = {
   number_of_sequences: number
   precise_MFE_algorithm: boolean
   optimizationAlgorithm: string
+  importedCodonTable: string
 }
 
 export type RequestData = {

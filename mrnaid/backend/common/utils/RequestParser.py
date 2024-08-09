@@ -18,7 +18,7 @@ class RequestParser(object):
         logger.info(self.data)
 
     def parse(self) -> OptimizationParameters:
-
+        print(self.data)
         def seq_char_check(seq, seq_name):
             """Function to check if allowed characters are used"""
             if not set(seq) <= set("TAGC"):
@@ -83,6 +83,8 @@ class RequestParser(object):
             organism = "h_sapiens"
         elif organism.lower() in ["m_musculus", "mouse", "mus_musc", "mus_musculus", "mus", "mus musculus", "m musculus", "mus musc"]:
             organism = "m_musculus"
+        elif organism.lower() in ["custom"]:
+            organism = "h_sapiens"
         else:
             raise SpeciesError("Invalid organism {} is provided!".format(organism))
 
