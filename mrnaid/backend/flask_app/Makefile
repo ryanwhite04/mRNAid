@@ -30,7 +30,7 @@ flask-run:
 	$(CONDA_ACTIVATE); \
 		CELERY_BROKER_URL=redis://127.0.0.1:6379 \
 		CELERY_RESULT_BACKEND=redis://127.0.0.1:6379 \
-		python -m flask run
+		python -m flask run --host 0.0.0.0 --port 5000
 
 celery-run:
 	$(CONDA_ACTIVATE); \
