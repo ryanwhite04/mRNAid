@@ -13,24 +13,22 @@ redis-install:
 	make;
 
 redis-run:
-	$(CONDA_ACTIVATE); \
-		redis-$(REDIS_VERSION)/src/redis-server
+	redis-$(REDIS_VERSION)/src/redis-server
 
 uwsgi-run:
-	$(CONDA_ACTIVATE); \
-		APP_NAME=backend \
-		CELERY_BROKER_URL=redis://127.0.0.1:6379 \
-		CELERY_RESULT_BACKEND=redis://127.0.0.1:6379 \
-		LOG_FILE=./logs/logs.log \
-		BACKEND_OBJECTIVES_DATA=../common/objectives/data \
-		PYTHONPATH=../common:../common/objectives:../common/constraints\
-		uwsgi --ini app.ini:uwsgi-no-docker
+	APP_NAME=backend \
+	CELERY_BROKER_URL=redis://127.0.0.1:6379 \
+	CELERY_RESULT_BACKEND=redis://127.0.0.1:6379 \
+	LOG_FILE=./logs/logs.log \
+	BACKEND_OBJECTIVES_DATA=../common/objectives/data \
+	PYTHONPATH=../common:../common/objectives:../common/constraints:../common/arw_mrna/src \
+	uwsgi --ini app.ini:uwsgi-docker
 
 flask-run:
 	$(CONDA_ACTIVATE); \
 		CELERY_BROKER_URL=redis://127.0.0.1:6379 \
 		CELERY_RESULT_BACKEND=redis://127.0.0.1:6379 \
-		python -m flask run
+		python -m flask run --host 0.0.0.0
 
 celery-run:
 	$(CONDA_ACTIVATE); \
