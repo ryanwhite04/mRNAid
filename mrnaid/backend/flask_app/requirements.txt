@@ -10,8 +10,11 @@ Biopython<1.82 # Due to missing CodonUsage module
 proglog
 docopt
 flametree
-python_codon_tables
+python-codon-tables
 pydantic
 scipy == 1.6.0
 loguru
 flower
+flask-socketio
+flask-cors
+redis-py

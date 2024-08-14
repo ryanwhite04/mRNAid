@@ -12,5 +12,5 @@ example.json
 build/
 dist/
 .ipynb_checkpoints
-mrnaid/backend/flask_app/email_config.py
 .vscode
+*.pdf

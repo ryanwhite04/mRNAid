@@ -16,6 +16,7 @@ import objective_functions as objectives
 from os import getcwd, path
 from notify import send_email
 app = Flask(__name__)
+socketio = SocketIO(app)
 CORS(app)
 
 # Setting up a logger

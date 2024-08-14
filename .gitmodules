@@ -1,0 +1,3 @@
+[submodule "mrnaid/backend/common/arw_mrna"]
+	path = mrnaid/backend/common/arw_mrna
+	url = https://github.com/ryanwhite04/arw_mrna.git
