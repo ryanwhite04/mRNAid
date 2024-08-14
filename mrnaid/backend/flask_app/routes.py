@@ -1,6 +1,6 @@
 import json
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from tasks import optimization_evaluation_task, ARWA, arwa_generator_task
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
@@ -14,9 +14,7 @@ import awalk
 import vienna
 import objective_functions as objectives
 from os import getcwd, path
-import smtplib
-from email.mime.text import MIMEText
-
+from notify import send_email
 app = Flask(__name__)
 socketio = SocketIO(app)
 CORS(app)
@@ -31,23 +29,24 @@ if path.basename(cwd) == 'flask_app':
 else:
     project_root = path.abspath(cwd)
 
-def send_email(subject, body, recipient):
-    
-    # Use the email configuration from email_config.py
-    
-    from email_config import email_server, email_port, gmail_username, gmail_password
-    sender = gmail_username
-    msg = MIMEText(body)
-    msg["From"] = sender
-    msg["To"] = recipient
-    msg["Subject"] = subject
+@app.route('/test_email', methods=['GET'])
+def test_email_form():
+    return render_template('test_email.html')
 
-    with smtplib.SMTP(email_server, email_port) as server:
-        server.starttls()
-        server.login(gmail_username, gmail_password)
-        server.sendmail(sender, recipient, msg.as_string())
-
-    print("Email sent successfully!")
+@app.route('/test_email', methods=['POST'])
+def test_email():
+    try:
+        # Extract data from the form
+        subject = request.form["subject"]
+        body = request.form["message"]  # Note: You had "body" before, but in the form, it's named "message"
+        recipient = request.form["email"]  # Note: You had "recipient" before, but in the form, it's named "email"
+        
+        # Send the email using your notify.py function
+        send_email(subject, body, recipient)
+        
+        return jsonify({'message': 'Email sent successfully!'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/arwa_sync', methods=['GET'])
 def arwa_sync_form():
@@ -247,6 +246,7 @@ def handle_arwa_sync(args):
             emit('arwa_sync_progress', update)
             # Send an email when the task is complete
             if update["type"] == "final" and args["email"]:
+                print("Sending email")
                 subject = "Task Complete"
                 body = f"{format_args(args)}\n\nCDS: {update['cds']}\nFitness: {update['fitness']}"
                 send_email(subject, body, args["email"])

@@ -1,0 +1,29 @@
+name: mRNAid
+channels:
+  - conda-forge
+  - bioconda
+dependencies:
+  - python=3.9
+  - pip
+  - flask
+  - celery
+  - flask-socketio
+  - flask-cors
+  - redis-py
+  - uWSGI
+  - viennarna
+  - dnachisel
+  - pytest
+  - redis
+  - celery
+  - Biopython<1.82 # Due to missing CodonUsage module
+  - proglog
+  - docopt
+  - flametree
+  - python-codon-tables
+  - pydantic
+  - scipy == 1.6.0
+  - loguru
+  - flower
+  - sendgrid
+  - python-dotenv
