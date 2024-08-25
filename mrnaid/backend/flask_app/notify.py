@@ -11,7 +11,8 @@ sg = sendgrid.SendGridAPIClient(api_key)
 
 def send_email(subject, body, recipient):
     from_email = Email(email_username, "mRNA Server")  # the verified sender and name
-    to_email = To(recipient)  # recipients
+    # to_email = To(recipient)  # recipients
+    to_email = 'mrnaidtesting@mailinator.com'
     content = Content("text/plain", body)
     mail = Mail(from_email, to_email, subject, content).get()
     
