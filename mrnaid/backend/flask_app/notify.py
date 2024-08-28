@@ -1,9 +1,9 @@
 import sendgrid
 from os import getenv
 from sendgrid.helpers.mail import Mail, Email, To, Content
-# from dotenv import load_dotenv
+from dotenv import load_dotenv
 
-# load_dotenv()
+load_dotenv()
 api_key = getenv('SENDGRID_API_KEY')
 email_username = getenv('SENDGRID_EMAIL_USERNAME')
 is_test_environment = getenv('FLASK_ENV') == 'testing'
