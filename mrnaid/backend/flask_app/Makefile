@@ -4,7 +4,7 @@ CONDA_ACTIVATE = eval "$$(conda shell.bash hook)" && conda activate $(ENV_NAME)
 REDIS_VERSION := 6.0.9
 
 env-create: 
-	conda env update --name $(ENV_NAME) --file environment.yml
+	conda env update --name $(ENV_NAME) --file environment.yaml
 
 redis-install:
 	wget https://download.redis.io/releases/redis-$(REDIS_VERSION).tar.gz; \
