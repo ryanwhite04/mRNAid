@@ -19,13 +19,21 @@ CORS(app)
 # Setting up a logger
 logger = MyLogger(__name__)
 
-# Determine if we are running from the project root or from within the flask app
-cwd = getcwd()
-if path.basename(cwd) == 'flask_app':
-    project_root = path.abspath(path.join(cwd, '../../..'))
-else:
-    project_root = path.abspath(cwd)
 
+@app.route('/codon_table', methods=['GET'])
+def codon_table():
+    return render_template('codon_table.html')
+
+@app.route('/codon_table', methods=['POST'])
+def codon_table_post():
+    # receive form input, get taxid 
+    taxid = request.form['taxid']
+    cd = python_codon_tables.get_codons_table(taxid)
+    if cd is None:
+        return jsonify({'error': 'Invalid taxid'}), 400
+    # convert the cd dictionary to a json object and return it
+    return jsonify(cd)
+    
 @app.route('/test_email', methods=['GET'])
 def test_email_form():
     return render_template('test_email.html')
