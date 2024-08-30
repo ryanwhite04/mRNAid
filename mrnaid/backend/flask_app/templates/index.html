@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>ARWA Sync Form</title>
+    <script src="//cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.3/socket.io.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.0"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+</head>
+<body>
+    <h1>ARWA Sync Request Form</h1>
+    <form id="arwaForm">
+        <label for="email">Email</label>
+        <input type="email" id="email" name="email">
+        <label for="cai_threshold">CAI Threshold:</label>
+        <input type="number" id="cai_threshold" name="cai_threshold" step="any" required>
+
+        <label for="cai_exp_scale">CAI Exp Scale:</label>
+        <input type="number" id="cai_exp_scale" name="cai_exp_scale" step="any" required>
+        <label for="freq_table_path">Species:</label>
+        <select id="freq_table_path" name="freq_table_path" required>
+            <option value="homosapiens.txt">Homosapiens</option>
+            <option value="mouse.txt">Mouse</option>
+        </select>
+        <label for="stability">Stability:</label>
+        <select id="stability" name="stability" required>
+            <option value="aup">AUP</option>
+            <option value="efe">EFE</option>
+            <option value="none">None</option>
+        </select>
+        <label for="aa_seq">Amino Acid Sequence:</label>
+        <textarea id="aa_seq" name="aa_seq" required></textarea>
+        <label for="steps">Steps:</label>
+        <input type="number" id="steps" name="steps" required>
+        <input type="submit" value="Submit">
+    </form>
+    <button id="test">Test</button>
+    <div id="chart-container">
+        <canvas id="progressChart"></canvas>
+    </div>
+    <div id="cds-container">
+        <h2>Current Step: <span id="currentStep">0</span></h2>
+        <h2>Current CDS</h2>
+        <div id="cds"></div>
+    </div>
+    <script src="{{ url_for('static', filename='index.js') }}"></script>
+</body>
+</html>

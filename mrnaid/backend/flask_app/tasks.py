@@ -154,13 +154,6 @@ def arwa_generator_task(self, args: dict) -> str:
     except Exception as e:
         logger.error(f"An error occurred: {e}", exc_info=True)
         raise
-        for update in awalk.adaptive_random_walk_generator(walk_config):
-            emit('arwa_sync_progress', update)
-            # Send an email when the task is complete
-            if update["type"] == "final" and args["email"]:
-                subject = "Task Complete"
-                body = f"{format_args(args)}\n\nCDS: {update['cds']}\nFitness: {update['fitness']}"
-                send_email(subject, body, args["email"])
 
 @celery.task()
 def optimization_evaluation_task(parameters: dict) -> str:

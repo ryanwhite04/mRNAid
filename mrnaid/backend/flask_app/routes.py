@@ -175,6 +175,10 @@ def awra_sync():
 def arwa_websocket():
     return render_template('arwa_websocket.html')
 
+@app.route('/', methods=['GET'])
+def index():
+    return render_template('index.html')
+
 def format_args(args):
     # for printing args nicely in email
     return f"""
