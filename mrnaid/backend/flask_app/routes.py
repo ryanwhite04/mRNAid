@@ -240,6 +240,10 @@ def handle_arwa_sync(args):
             aa_seq, freq_table, obj, steps, init_cds=init_cds, verbose=verbose)
 
         for update in awalk.adaptive_random_walk_generator(walk_config):
+                        # only send progress updates if they are a multiple of 10
+            if update["type"] == "progress" and update["step"] % 10 != 0:
+                continue
+            update = { **update, "stability": stability, "cai_threshold": cai_threshold, "cai_exp_scale": cai_exp_scale}
             emit('arwa_sync_progress', update)
             # Send an email when the task is complete
             if update["type"] == "final" and args["email"]:

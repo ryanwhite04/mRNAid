@@ -146,6 +146,10 @@ def arwa_generator_task(self, args: dict) -> str:
             aa_seq, freq_table, obj, steps, init_cds=init_cds, verbose=verbose)
         generator = awalk.adaptive_random_walk_generator(walk_config)
         for step in generator:
+            # only send progress updates if they are a multiple of 10
+            if step["type"] == "progress" and step["step"] % 10 != 0:
+                continue
+            step = {**step, "stability": stability, "cai_threshold": cai_threshold, "cai_exp_scale": cai_exp_scale}
             self.update_state(state=step["type"], meta=step)
     except Exception as e:
         logger.error(f"An error occurred: {e}", exc_info=True)
