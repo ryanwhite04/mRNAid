@@ -155,7 +155,7 @@ def awra_sync():
         cai = freq_table.codon_adaptation_index(result.cds)
         aup, efe = vienna.aup_and_efe(vienna.cds_to_rna(result.cds))
         logger.info(10 * '#' + 'END OF PROCESSING THE REQUEST: SUCCESS' + 10 * '#')
-        return json.dumps({
+        return jsonify({
             'cds': result.cds,
             'fitness': result.fitness,
             'cai': cai,
@@ -164,7 +164,7 @@ def awra_sync():
         }), 200
     except Exception as e:
         logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
-        return json.dumps({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
 @app.route('/arwa_websocket', methods=['GET'])
 def arwa_websocket():
@@ -263,10 +263,10 @@ def arwa():
         logger.debug('Sequences are received from Parser')
         task = arwa_generator_task.delay(parameters)
         print(task.get(on_message=print, propagate=False))
-        return json.dumps({'task_id': task.id}), 200
+        return jsonify({'task_id': task.id}), 200
     except Exception as e:
         logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
-        return json.dumps({'error': str(e)}), 500
+        return jsonify({'error': str(e)}), 500
 
 # Defining the routes
 @app.route('/api/v1/optimize', methods=['POST'])
@@ -303,7 +303,7 @@ def optimization():
         logger.error(f'Something went wrong when sending task to the queue: {e}')
         return str(e), 500
     else:
-        return json.dumps({'task_id': task.id})
+        return jsonify({'task_id': task.id})
 
 
 @app.route('/api/v1/status/<task_id>', methods=['GET'])
@@ -315,14 +315,14 @@ def status(task_id: str) -> str:
     """
     task = optimization_evaluation_task.AsyncResult(task_id)
     if task.state == 'PENDING':
-        return json.dumps(
+        return jsonify(
             {"message": "Task is in progress... Lay back or get some coffee, I'm working hard on your request!",
              "task_id": task.id,
              "state": task.state,
              "data": None}), 202
     elif task.state == 'FAILURE':
         logger.info(10 * '#' + 'END OF PROCESSING THE REQUEST: FAILURE' + 10 * '#')
-        return json.dumps(
+        return jsonify(
             {
                 "message": f"Ooops, something went wrong! Please contact administrator and provide him/her your task id: {task.id}",
                 "task_id": task.id,
@@ -330,7 +330,7 @@ def status(task_id: str) -> str:
                 "data": None}), 500
     elif task.state == 'SUCCESS':
         logger.info(10 * '#' + 'END OF PROCESSING THE REQUEST: SUCCESS' + 10 * '#')
-        return json.dumps(
+        return jsonify(
             {"message": "Done!",
              "task_id": task.id,
              "state": task.state,
