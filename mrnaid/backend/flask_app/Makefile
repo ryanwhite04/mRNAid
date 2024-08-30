@@ -13,7 +13,7 @@ redis-install:
 	make;
 
 redis-run:
-	redis-$(REDIS_VERSION)/src/redis-server
+	redis-$(REDIS_VERSION)/src/redis-server --bind 0.0.0.0
 
 uwsgi-run:
 	APP_NAME=backend \
@@ -31,8 +31,8 @@ flask-run:
 
 celery-run:
 	$(CONDA_ACTIVATE); \
-		CELERY_BROKER_URL=redis://127.0.0.1:6379 \
-		CELERY_RESULT_BACKEND=redis://127.0.0.1:6379 \
+		CELERY_BROKER_URL=$${REDIS_URL:-redis://127.0.0.1:6379} \
+		CELERY_RESULT_BACKEND=$${REDIS_URL:-redis://127.0.0.1:6379} \
 		LOG_FILE=./logs/logs.log \
 		BACKEND_OBJECTIVES_DATA=../common/objectives/data \
 		python -m celery -A tasks worker --loglevel=info
