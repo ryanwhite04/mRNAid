@@ -1,23 +1,15 @@
 import json
 import os
-import time
 import numpy as np
-from Evaluation import Evaluation
-from OptimizationProblems import initialize_optimization_problem
-from OptimizationTask import optimization_task
 from billiard import Pool
 from celery import Celery
-from utils.Datatypes import OptimizationParameters
-from utils.Logger import MyLogger
-from awalk import adaptive_random_walk, WalkConfig
-from importlib import util
-import sys
-from pathlib import Path
 import pickle
-import protein
-import awalk
-import vienna
-import objective_functions as objectives
+from ..common.Evaluation import Evaluation
+from ..common.OptimizationProblems import initialize_optimization_problem
+from ..common.OptimizationTask import optimization_task
+from ..common.utils.Datatypes import OptimizationParameters
+from ..common.utils.Logger import MyLogger
+from ..common.arw_mrna.src import protein, awalk, vienna, objective_functions as objectives
 
 # Setting up logger
 logger = MyLogger(__name__)

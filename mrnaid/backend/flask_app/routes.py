@@ -1,20 +1,17 @@
 import json
-
 from flask import Flask, request, render_template, jsonify
-from tasks import optimization_evaluation_task, ARWA, arwa_generator_task
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
-from utils.Exceptions import EmptySequenceError, SequenceLengthError, NoGCError, EntropyWindowError, \
-    NumberOfSequencesError, WrongCharSequenceError, RangeError, SpeciesError
-from utils.Logger import MyLogger
-from utils.RequestParser import RequestParser
 import pickle
-import protein
-import awalk
-import vienna
-import objective_functions as objectives
+from .tasks import optimization_evaluation_task, arwa_generator_task
+from ..common.utils.Exceptions import EmptySequenceError, SequenceLengthError, NoGCError, EntropyWindowError, \
+    NumberOfSequencesError, WrongCharSequenceError, RangeError, SpeciesError
+from ..common.utils.Logger import MyLogger
+from ..common.utils.RequestParser import RequestParser
+from ..common.arw_mrna.src import protein, awalk, vienna, objective_functions as objectives
+import python_codon_tables
 from os import getcwd, path
-from notify import send_email
+from .notify import send_email
 app = Flask(__name__)
 socketio = SocketIO(app)
 CORS(app)
