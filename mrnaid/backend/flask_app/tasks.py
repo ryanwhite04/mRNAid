@@ -126,9 +126,12 @@ def arwa_generator_task(self, args: dict) -> str:
         if not os.path.exists(freq_table_path):
             raise FileNotFoundError(f"The file does not exist: {freq_table_path}")
 
+        print(freq_table_path)
         stability = args["stability"]
         verbose = args["verbose"]
         freq_table = protein.CodonFrequencyTable(freq_table_path)
+        print('FREQ TABLE')
+        print(print(freq_table.__dict__))
         obj_config = objectives.CAIThresholdObjectiveConfig(
             freq_table,
             cai_threshold,
