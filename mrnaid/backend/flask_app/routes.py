@@ -3,13 +3,11 @@ from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import pickle
-from .tasks import optimization_evaluation_task, arwa_generator_task
-from ..common.utils.Exceptions import EmptySequenceError, SequenceLengthError, NoGCError, EntropyWindowError, \
-    NumberOfSequencesError, WrongCharSequenceError, RangeError, SpeciesError
-from ..common.utils.Logger import MyLogger
-from ..common.utils.RequestParser import RequestParser
-from ..common.arw_mrna.src import protein, awalk, vienna, objective_functions as objectives
-import python_codon_tables
+import protein
+import awalk
+import vienna
+import objective_functions as objectives
+import python_codon_tables as pct
 from os import getcwd, path
 from .notify import send_email
 app = Flask(__name__)
@@ -52,6 +50,19 @@ def test_email():
         return jsonify({'message': 'Email sent successfully!'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+
+@app.route('/custom_codon_table/<taxID>', methods=['GET'])
+def custom_codon_table(taxID):
+    try:
+        print(taxID)
+            # LOAD ONE TABLE BY TAXID (it will get it from the internet if it is not
+        # in the builtin tables)
+        table = pct.get_codons_table(taxID)
+        return jsonify(table), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
+
 
 @app.route('/arwa_sync', methods=['GET'])
 def arwa_sync_form():
@@ -196,6 +207,7 @@ def handle_arwa_websocket_celery(args):
     def on_message(body):
         emit('arwa_sync_progress', body)
     try:
+        print('Socket IO args')
         print(args)
         args["verbose"] = True
         task = arwa_generator_task.delay(args)
