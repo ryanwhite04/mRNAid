@@ -4,18 +4,18 @@ import numpy as np
 from billiard import Pool
 from celery import Celery
 import pickle
-from ..common.Evaluation import Evaluation
-from ..common.OptimizationProblems import initialize_optimization_problem
-from ..common.OptimizationTask import optimization_task
-from ..common.utils.Datatypes import OptimizationParameters
-from ..common.utils.Logger import MyLogger
-from ..common.arw_mrna.src import protein, awalk, vienna, objective_functions as objectives
+from common.Evaluation import Evaluation
+from common.OptimizationProblems import initialize_optimization_problem
+from common.OptimizationTask import optimization_task
+from common.utils.Datatypes import OptimizationParameters
+from common.utils.Logger import MyLogger
+from common.arw_mrna.src import protein, awalk, vienna, objective_functions as objectives
 
 # Setting up logger
 logger = MyLogger(__name__)
 
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL'),
-CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND')
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', "redis://localhost:6379"),
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', "redis://localhost:6379")
 NUMBER_OF_ATTEMPTS = 3
 
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)

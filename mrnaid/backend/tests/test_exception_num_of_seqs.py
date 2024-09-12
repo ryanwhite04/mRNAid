@@ -1,6 +1,6 @@
 from tests.test_request_parsing import MockRequest
-from utils.Exceptions import NumberOfSequencesError
-from utils.RequestParser import RequestParser
+from common.utils.Exceptions import NumberOfSequencesError
+from common.utils.RequestParser import RequestParser
 
 
 def test_num_of_seqs():

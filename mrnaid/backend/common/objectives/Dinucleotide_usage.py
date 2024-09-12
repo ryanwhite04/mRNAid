@@ -5,7 +5,7 @@ from typing import Dict, List
 
 from dnachisel import (DnaOptimizationProblem, SpecEvaluation, Location, Specification)
 from dnachisel.biotools import group_nearby_indices
-from utils.Logger import MyLogger
+from common.utils.Logger import MyLogger
 
 logger = MyLogger(__name__)
 

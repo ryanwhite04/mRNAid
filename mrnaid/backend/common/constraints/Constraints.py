@@ -2,7 +2,7 @@ from typing import List, Union, Tuple
 
 from dnachisel import Specification, AvoidPattern, EnzymeSitePattern, EnforceGCContent, EnforceTranslation, \
     AvoidRareCodons
-from constraints.UridineDepletion import UridineDepletion
+from common.constraints.UridineDepletion import UridineDepletion
 
 
 class Constraints(object):

@@ -1,9 +1,9 @@
 import json
 
-from utils.Datatypes import OptimizationParameters
-from utils.Exceptions import SequenceLengthError, EmptySequenceError, \
+from common.utils.Datatypes import OptimizationParameters
+from common.utils.Exceptions import SequenceLengthError, EmptySequenceError, \
     EntropyWindowError, NoGCError, NumberOfSequencesError, WrongCharSequenceError, RangeError, SpeciesError
-from utils.Logger import MyLogger
+from common.utils.Logger import MyLogger
 
 # Setting up a logger
 logger = MyLogger(__name__)

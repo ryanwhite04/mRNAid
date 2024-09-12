@@ -1,8 +1,8 @@
 from Bio.Seq import Seq
-from OptimizationProblems import initialize_optimization_problem
-from OptimizationTask import optimization_task
-from utils.Datatypes import OptimizationParameters
-from Evaluation import Evaluation
+from common.OptimizationProblems import initialize_optimization_problem
+from common.OptimizationTask import optimization_task
+from common.utils.Datatypes import OptimizationParameters
+from common.Evaluation import Evaluation
 
 
 def get_rare_codons(species, threshold):

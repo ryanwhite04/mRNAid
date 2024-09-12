@@ -195,7 +195,7 @@ document.addEventListener("DOMContentLoaded", () => {
         requestData.cai_threshold = parseFloat(requestData.cai_threshold);
         requestData.cai_exp_scale = parseFloat(requestData.cai_exp_scale);
         requestData.steps = parseInt(requestData.steps, 10);
-        socket.emit('arwa_websocket', requestData);
+        socket.emit('arwa_websocket_celery', requestData);
     });
 
     document.getElementById('test').addEventListener('click', () => {

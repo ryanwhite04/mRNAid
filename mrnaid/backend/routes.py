@@ -3,13 +3,15 @@ from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit
 from flask_cors import CORS
 import pickle
-import protein
-import awalk
-import vienna
-import objective_functions as objectives
+from tasks import optimization_evaluation_task, arwa_generator_task
+from common.utils.Exceptions import EmptySequenceError, SequenceLengthError, NoGCError, EntropyWindowError, \
+    NumberOfSequencesError, WrongCharSequenceError, RangeError, SpeciesError
+from common.utils.Logger import MyLogger
+from common.utils.RequestParser import RequestParser
+from common.arw_mrna.src import protein, awalk, vienna, objective_functions as objectives
 import python_codon_tables as pct
 from os import getcwd, path
-from .notify import send_email
+from notify import send_email
 app = Flask(__name__)
 socketio = SocketIO(app)
 CORS(app)
@@ -26,7 +28,7 @@ def codon_table():
 def codon_table_post():
     # receive form input, get taxid 
     taxid = request.form['taxid']
-    cd = python_codon_tables.get_codons_table(taxid)
+    cd = pct.get_codons_table(taxid)
     if cd is None:
         return jsonify({'error': 'Invalid taxid'}), 400
     # convert the cd dictionary to a json object and return it
@@ -360,3 +362,5 @@ def status(task_id: str) -> str:
              "task_id": task.id,
              "state": task.state,
              "data": json.loads(task.get())})
+
+application = app

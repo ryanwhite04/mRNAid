@@ -1,11 +1,11 @@
 from typing import List, Union, Tuple
 
 from dnachisel import *
-from objectives.Codon_pair_usage import MatchTargetCodonPairUsage
-from objectives.Dinucleotide_usage import MatchTargetPairUsage
-from objectives.MFE_optimization import MinimizeMFE
-from utils.Logger import MyLogger
-from utils.Exceptions import UnsupportedOptimizationError
+from common.objectives.Codon_pair_usage import MatchTargetCodonPairUsage
+from common.objectives.Dinucleotide_usage import MatchTargetPairUsage
+from common.objectives.MFE_optimization import MinimizeMFE
+from common.utils.Logger import MyLogger
+from common.utils.Exceptions import UnsupportedOptimizationError
 
 # Setting up a logger
 logger = MyLogger(__name__)

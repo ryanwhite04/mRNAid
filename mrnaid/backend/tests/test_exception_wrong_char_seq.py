@@ -1,5 +1,5 @@
-from utils.Exceptions import WrongCharSequenceError
-from utils.RequestParser import RequestParser
+from common.utils.Exceptions import WrongCharSequenceError
+from common.utils.RequestParser import RequestParser
 import pytest
 from tests.test_request_parsing import MockRequest
 

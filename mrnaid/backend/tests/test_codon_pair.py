@@ -1,8 +1,7 @@
 from statistics import mean
-
+from unittest import TestCase, main
 from dnachisel import DnaOptimizationProblem
 from common.objectives.Codon_pair_usage import MatchTargetCodonPairUsage
-
 
 def get_ratios_from_sequence(sequence):
     """Function to calculate codon pair frequencies from the input sequence"""
@@ -27,27 +26,26 @@ def calculate_mean_ratio(calculated_freqs):
         ratios.append(pair_usage_table[pair] / fr)
     return mean([abs(1 - ratio) for ratio in ratios])
 
+class TestCodonPair(TestCase):
+    def optimization(self, organism):
+        """Check that optimized codon pair frequencies are closer to target than original ones"""
+        input_sequence = "CCGTCGCGGCAGGTTATTATACCTCATTCCTTGGAGACATACAACTATCAATGGGACTTGAGGTTAAGGTATTCCCGCATGAACGCGTGTACTGAAAATATGAAGGCGAGGGCGGAAGCTTTCATTAGCGAGCACCTACAACGTTAGAGTTGGTCGTGTCTTGCTATGCGTCCAGCACATCTGTAAGCCGGTATAAGGCCAGGGGCGGTACATATCGTACAGATCTAGTACATGTTGATAACTTTCATCTGTCGTAGGAAGGCGGAGCCGCCCCTGACGGACGTAGAAAGGGGAATGGGCACTGAGACCCAGTGAGCCCCTTTTGCGTTCTTGGCAAATACCTAGACCTTCTGGTCGTCCTATCGTAATATCTCCTGATACTCATGACAGCAGGATAGCAGCCTGCAACCTCCATGTACTTCGTTGGATTCTTTCCGAGTCTCGTGTGAGTAGATGCTTTGGGGAGTTACCTCTAACACATGGCTTGTTTATTCGTAATTCGACTCCCATGCTTGCTTTTAAACGTCTGTCAACATGAACATTCTGGTCGCACGACGATTAAGAAAGGGAACTTCGTGTTGATGTAGTAGGATATAGCAG"
+        objective = MatchTargetCodonPairUsage(species=organism)
+        problem = DnaOptimizationProblem(input_sequence, objectives=[objective])
+        problem.resolve_constraints()
+        problem.optimize()
 
-def optimization(organism):
-    """Check that optimized codon pair frequencies are closer to target than original ones"""
-    input_sequence = "CCGTCGCGGCAGGTTATTATACCTCATTCCTTGGAGACATACAACTATCAATGGGACTTGAGGTTAAGGTATTCCCGCATGAACGCGTGTACTGAAAATATGAAGGCGAGGGCGGAAGCTTTCATTAGCGAGCACCTACAACGTTAGAGTTGGTCGTGTCTTGCTATGCGTCCAGCACATCTGTAAGCCGGTATAAGGCCAGGGGCGGTACATATCGTACAGATCTAGTACATGTTGATAACTTTCATCTGTCGTAGGAAGGCGGAGCCGCCCCTGACGGACGTAGAAAGGGGAATGGGCACTGAGACCCAGTGAGCCCCTTTTGCGTTCTTGGCAAATACCTAGACCTTCTGGTCGTCCTATCGTAATATCTCCTGATACTCATGACAGCAGGATAGCAGCCTGCAACCTCCATGTACTTCGTTGGATTCTTTCCGAGTCTCGTGTGAGTAGATGCTTTGGGGAGTTACCTCTAACACATGGCTTGTTTATTCGTAATTCGACTCCCATGCTTGCTTTTAAACGTCTGTCAACATGAACATTCTGGTCGCACGACGATTAAGAAAGGGAACTTCGTGTTGATGTAGTAGGATATAGCAG"
-    objective = MatchTargetCodonPairUsage(species=organism)
-    problem = DnaOptimizationProblem(input_sequence, objectives=[objective])
-    problem.resolve_constraints()
-    problem.optimize()
+        optimized_sequence = problem.sequence
+        optimized_ratios = get_ratios_from_sequence(optimized_sequence)
+        optimized_mean = calculate_mean_ratio(optimized_ratios)
 
-    optimized_sequence = problem.sequence
-    optimized_ratios = get_ratios_from_sequence(optimized_sequence)
-    optimized_mean = calculate_mean_ratio(optimized_ratios)
+        input_ratios = get_ratios_from_sequence(input_sequence)
+        input_mean = calculate_mean_ratio(input_ratios)
 
-    input_ratios = get_ratios_from_sequence(input_sequence)
-    input_mean = calculate_mean_ratio(input_ratios)
+        assert optimized_mean < input_mean
 
-    assert optimized_mean < input_mean
+    def test_optimized_frequencies_human(self):
+        self.optimization('h_sapiens')
 
-
-def test_optimized_frequencies_human():
-    optimization('h_sapiens')
-
-def test_optimized_frequencies_mouse():
-    optimization('m_musculus')
+    def test_optimized_frequencies_mouse(self):
+        self.optimization('m_musculus')

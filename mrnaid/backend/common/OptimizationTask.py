@@ -1,6 +1,6 @@
 from dnachisel import DnaOptimizationProblem
-from utils.Logger import MyLogger
-from utils.Exceptions import OptimizationFailedError
+from common.utils.Logger import MyLogger
+from common.utils.Exceptions import OptimizationFailedError
 
 logger = MyLogger(__name__)
 

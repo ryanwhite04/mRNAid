@@ -1,10 +1,6 @@
 from requests import post, get
 
-# add ../common/arw_mrna/src to sys.path
-import sys
-sys.path.append("../common/arw_mrna/src")
-
-import protein
+import common.protein
 from awalk import adaptive_random_walk, WalkConfig
 def get_arwa_task(id):
     url = f"http://localhost:5000/api/v1/status/{id}"
