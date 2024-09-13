@@ -208,3 +208,63 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     console.log(progressData);
 });
+function openPopup() {
+    document.getElementById('popup').style.display = 'block';
+    document.getElementById('overlay').style.display = 'block';
+}
+
+function closePopup() {
+    document.getElementById('popup').style.display = 'none';
+    document.getElementById('overlay').style.display = 'none';
+}
+
+function searchPopup() {
+    // Define the taxID you want to use
+    // const taxID = '12345'; // Replace with the actual taxID you want to pass
+    const taxID = document.getElementById('species').value;
+    // Construct the URL with the taxID
+    const url = `/custom_codon_table/${taxID}`;
+
+    // Use fetch to make a GET request to the route
+    fetch(url, {
+        method: 'GET',
+    })
+    .then(response => {
+        if (!response.ok) {
+            alert('No data found 1');
+            throw new Error('Network response was not ok ' + response.statusText);
+        }
+        return response.text(); // Or response.json() if the response is JSON
+    })
+    .then(data => {
+        console.log(data); // Handle the response data
+        // You can update your UI or do something else with the data here
+        if (data) {
+            // Check if taxID exists in the options
+            let optionExists = false;
+            var select = document.getElementById('freq_table_path');
+            for (var i = 0; i < select.options.length; i++) {
+                if (select.options[i].value === taxID) {
+                    optionExists = true;
+                    break;
+                }
+            }
+
+            // If the option doesn't exist, create a new option
+            if (!optionExists) {
+                var newOption = new Option(taxID, taxID);
+                select.add(newOption);
+            }
+
+            // Set the value of the select element to taxID
+            select.value = taxID;
+            document.getElementById('freq_table_path').value = taxID;
+            closePopup();
+        } else {
+            alert('No data found');
+        }
+    })
+    .catch(error => {
+        console.error('There was a problem with the fetch operation:', error);
+    });
+}

@@ -7,38 +7,68 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@1.0.0"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='index.css') }}">
+    
 </head>
 <body>
     <h1>ARWA Sync Request Form</h1>
     <form id="arwaForm">
         <label for="email">Email</label>
         <input type="email" id="email" name="email">
+
         <label for="cai_threshold">CAI Threshold:</label>
         <input type="number" id="cai_threshold" name="cai_threshold" step="any" required>
 
         <label for="cai_exp_scale">CAI Exp Scale:</label>
         <input type="number" id="cai_exp_scale" name="cai_exp_scale" step="any" required>
-        <label for="freq_table_path">Species:</label>
-        <select id="freq_table_path" name="freq_table_path" required>
-            <option value="homosapiens.txt">Homosapiens</option>
-            <option value="mouse.txt">Mouse</option>
-        </select>
+        
+        <label for="freq_table_path" style="margin-right: 10px;">Species:</label>
+        <div style="display: flex; align-items: center;">
+            <select id="freq_table_path" name="freq_table_path" required style="margin-right: 10px;">
+                <option value="homosapiens.txt">Homosapiens</option>
+                <option value="mouse.txt">Mouse</option>
+            </select>
+            <!-- Button next to the label -->
+            <button type="button" id="customButton" onclick="openPopup()">Add Custom Codon Table</button>
+        </div>
+
+    
+
+
+
+        <!-- Pop-up div (initially hidden) -->
+        <div id="popup" style="display:none; position:fixed; top:50%; left:50%; transform:translate(-50%, -50%); background-color:white; border:1px solid black; padding:20px; z-index:1000;">
+            <h3>Enter a species ID to use</h3>
+            <input type="text" id="species" name="species" placeholder="Enter a species">
+            <button type="button" onclick="closePopup()">Close</button>
+            <button type="button" onclick="searchPopup()">Search</button>
+        </div>
+
+        <!-- Overlay to dim the background -->
+        <div id="overlay" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background-color:rgba(0,0,0,0.5); z-index:999;"></div>
+
+
         <label for="stability">Stability:</label>
         <select id="stability" name="stability" required>
             <option value="aup">AUP</option>
             <option value="efe">EFE</option>
             <option value="none">None</option>
         </select>
+
         <label for="aa_seq">Amino Acid Sequence:</label>
         <textarea id="aa_seq" name="aa_seq" required></textarea>
+
         <label for="steps">Steps:</label>
         <input type="number" id="steps" name="steps" required>
+
         <input type="submit" value="Submit">
     </form>
+
     <button id="test">Test</button>
+
     <div id="chart-container">
         <canvas id="progressChart"></canvas>
     </div>
+
     <div id="cds-container">
         <h2>Current Step: <span id="currentStep">0</span></h2>
         <h2>Current CDS</h2>
