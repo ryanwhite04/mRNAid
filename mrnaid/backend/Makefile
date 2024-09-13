@@ -23,7 +23,7 @@ uwsgi-run:
 		CELERY_BROKER_URL=redis://127.0.0.1:6379 \
 		CELERY_RESULT_BACKEND=redis://127.0.0.1:6379 \
 		LOG_FILE=./logs/logs.log \
-		BACKEND_OBJECTIVES_DATA=../common/objectives/data \
+		BACKEND_OBJECTIVES_DATA=./common/objectives/data \
 		uwsgi --ini app.ini:uwsgi-docker
 
 flask-run:
@@ -33,9 +33,9 @@ flask-run:
 celery-run:
 	$(CONDA_ACTIVATE); \
 		LOG_FILE=./logs/logs.log \
-		BACKEND_OBJECTIVES_DATA=../common/objectives/data \
-		celery -A flask_app.tasks worker --loglevel=info
+		BACKEND_OBJECTIVES_DATA=./common/objectives/data \
+		celery -A tasks worker --loglevel=info
 
 flower-run:
 	$(CONDA_ACTIVATE); \
-        celery flower -A flask_app.tasks
+        celery flower -A tasks
