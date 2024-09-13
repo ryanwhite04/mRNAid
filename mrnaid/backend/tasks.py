@@ -54,7 +54,7 @@ def ARWA(args: dict) -> str:
         cai_exp_scale = args["cai_exp_scale"]
         # Construct the absolute path to the freq_table file
         base_path = os.path.dirname(os.path.abspath(__file__))
-        freq_table_path = os.path.join(base_path, '..', 'common', 'arw_mrna', 'codon_tables', args['freq_table_path'])
+        freq_table_path = os.path.join(base_path, 'common', 'arw_mrna', 'codon_tables', args['freq_table_path'])
         logger.info(f"Looking for freq_table at {freq_table_path}")
 
         if not os.path.exists(freq_table_path):
@@ -111,17 +111,11 @@ def arwa_generator_task(self, args: dict) -> str:
         cai_threshold = args["cai_threshold"]
         cai_exp_scale = args["cai_exp_scale"]
         # Construct the absolute path to the freq_table file
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        freq_table_path = os.path.join(base_path, '..', 'common', 'arw_mrna', 'codon_tables', args['freq_table_path'])
-        logger.info(f"Looking for freq_table at {freq_table_path}")
-
-        if not os.path.exists(freq_table_path):
-            raise FileNotFoundError(f"The file does not exist: {freq_table_path}")
-
-        print(freq_table_path)
         stability = args["stability"]
         verbose = args["verbose"]
-        freq_table = protein.CodonFrequencyTable(freq_table_path)
+        freq_table_path = args["freq_table_path"]
+        taxid = freq_table_path if freq_table_path.endswith('.txt') else int(freq_table_path)
+        freq_table = protein.CodonFrequencyTable(taxid)
         print('FREQ TABLE')
         print(print(freq_table.__dict__))
         obj_config = objectives.CAIThresholdObjectiveConfig(

@@ -131,8 +131,8 @@ def awra_sync():
         # Determine the base directory for the codon tables
         if path.exists('mrnaid/backend/common/arw_mrna/codon_tables'):
             base_dir = 'mrnaid/backend/common/arw_mrna/codon_tables'
-        elif path.exists('../common/arw_mrna/codon_tables'):
-            base_dir = '../common/arw_mrna/codon_tables'
+        elif path.exists('common/arw_mrna/codon_tables'):
+            base_dir = 'common/arw_mrna/codon_tables'
         else:
             raise FileNotFoundError("Cannot find the codon tables directory")
 
@@ -207,7 +207,9 @@ def format_args(args):
 @socketio.on('arwa_websocket_celery')
 def handle_arwa_websocket_celery(args):
     def on_message(body):
-        emit('arwa_sync_progress', body)
+        status = body["status"]
+        if status in ["final", "initial", "progress", "new_cds"]:
+            emit('arwa_sync_progress', body["result"])
     try:
         print('Socket IO args')
         print(args)
@@ -225,19 +227,9 @@ def handle_arwa_sync(args):
         cai_exp_scale = float(args["cai_exp_scale"])
         stability = args["stability"]
         verbose = True
-        print("cwd: ", getcwd())
-        # Determine the base directory for the codon tables
-        if path.exists('mrnaid/backend/common/arw_mrna/codon_tables'):
-            base_dir = 'mrnaid/backend/common/arw_mrna/codon_tables'
-        elif path.exists('../common/arw_mrna/codon_tables'):
-            base_dir = '../common/arw_mrna/codon_tables'
-        else:
-            raise FileNotFoundError("Cannot find the codon tables directory")
-
-        # Construct the path to the frequency table
-        freq_table_path = path.join(base_dir, args['freq_table_path'])
-        print(freq_table_path)
-        freq_table = protein.CodonFrequencyTable(freq_table_path)
+        freq_table_path = args["freq_table_path"]
+        taxid = freq_table_path if freq_table_path.endswith('.txt') else int(freq_table_path)
+        freq_table = protein.CodonFrequencyTable(taxid)
         obj_config = objectives.CAIThresholdObjectiveConfig(
             freq_table,
             cai_threshold,
