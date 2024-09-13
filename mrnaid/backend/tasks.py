@@ -14,8 +14,8 @@ from common.arw_mrna.src import protein, awalk, vienna, objective_functions as o
 # Setting up logger
 logger = MyLogger(__name__)
 
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', "redis://localhost:6379"),
-CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', "redis://localhost:6379")
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', "redis://localhost:6379/0")
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', "redis://localhost:6379/1")
 NUMBER_OF_ATTEMPTS = 3
 
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
