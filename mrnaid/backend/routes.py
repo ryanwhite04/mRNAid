@@ -65,9 +65,10 @@ def custom_codon_table(taxID):
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
-@app.route('/task/<task_id>')
-def get_task():
-    # TODO
+@app.route('/task/<task_id>', methods=['GET'])
+def get_task(task_id):
+    task = optimization_evaluation_task.AsyncResult(task_id)
+    return render_template('task.html', task=task)
 
 @app.route('/arwa_sync', methods=['GET'])
 def arwa_sync_form():
