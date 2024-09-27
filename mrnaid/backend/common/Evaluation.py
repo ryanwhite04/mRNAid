@@ -5,6 +5,7 @@ from typing import Tuple
 import RNA
 from Bio.Seq import Seq
 from Bio.SeqUtils.CodonUsage import CodonAdaptationIndex, SynonymousCodons
+# from Bio.SeqUtils import CodonAdaptionIndex
 from billiard import Pool
 from dnachisel import Location
 from dnachisel import MatchTargetCodonUsage
