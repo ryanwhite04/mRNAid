@@ -3,6 +3,8 @@ import os
 import numpy as np
 from billiard import Pool
 from celery import Celery
+from celery.signals import task_prerun, task_postrun
+from socketio import Client
 import pickle
 from common.Evaluation import Evaluation
 from common.OptimizationProblems import initialize_optimization_problem
@@ -10,12 +12,13 @@ from common.OptimizationTask import optimization_task
 from common.utils.Datatypes import OptimizationParameters
 from common.utils.Logger import MyLogger
 from common.arw_mrna.src import protein, awalk, vienna, objective_functions as objectives
+from notify import send_email
 
 # Setting up logger
 logger = MyLogger(__name__)
 
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', "redis://localhost:6379/0")
-CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', "redis://localhost:6379/1")
+CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', "redis://redis:6379/0")
+CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', "redis://redis:6379/1")
 NUMBER_OF_ATTEMPTS = 3
 PRIVATE_HOST = os.getenv('PRIVATE_HOST', "http://flask:5000")
 PUBLIC_HOST = os.getenv('PUBLIC_HOST', "http://localhost:5000")
@@ -126,6 +129,8 @@ def ARWA(args: dict) -> str:
 def arwa_generator_task(self, args: dict) -> str:
     logger.info(10 * '#' + 'STARTING PROCESSING THE REQUEST' + 10 * '#')
     logger.info(f"Received request with args: {args}")
+    task_id = self.request.id
+    sio.emit('join', {'room': task_id})
     try:
         cai_threshold = args["cai_threshold"]
         cai_exp_scale = args["cai_exp_scale"]
@@ -179,6 +184,7 @@ def arwa_generator_task(self, args: dict) -> str:
     except Exception as e:
         logger.error(f"An error occurred: {e}", exc_info=True)
         raise
+    sio.emit('leave', {'room': task_id})
 
 @celery.task()
 def optimization_evaluation_task(parameters: dict) -> str:

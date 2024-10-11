@@ -18,6 +18,3 @@ def send_email(subject, body, recipient):
     
     # Send an HTTP POST request to /mail/send
     response = sg.client.mail.send.post(request_body=mail)
-    print(response.status_code)
-    print(response.headers)
-    print("Email sent successfully!")

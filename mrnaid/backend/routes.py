@@ -1,6 +1,6 @@
 import json
 from flask import Flask, request, render_template, jsonify
-from flask_socketio import SocketIO, emit
+from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
 import pickle
 from tasks import optimization_evaluation_task, arwa_generator_task
@@ -64,11 +64,20 @@ def custom_codon_table(taxID):
         return jsonify(table), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
+    
+@socketio.on('task_progress')
+def handle_task_progress(data):
+    room = data['task_id']
+    step = data['result']
+    socketio.emit('task_update', step, room=room)
 
 @app.route('/task/<task_id>', methods=['GET'])
 def get_task(task_id):
-    task = optimization_evaluation_task.AsyncResult(task_id)
-    return render_template('task.html', task=task)
+    task = arwa_generator_task.AsyncResult(task_id)
+    data = None
+    if task.status == "SUCCESS":
+        data = task.get()
+    return render_template('task.html', task=task, data=data)
 
 @app.route('/arwa_sync', methods=['GET'])
 def arwa_sync_form():
@@ -164,6 +173,15 @@ def format_args(args):
         Steps: {args["steps"]}
         
     """
+@socketio.on('join')
+def on_join(data):
+    room = data['room']
+    join_room(room)
+
+@socketio.on('leave')
+def on_leave(data):
+    room = data['room']
+    leave_room(room)
 
 @socketio.on('arwa_websocket_celery')
 def handle_arwa_websocket_celery(args):
@@ -176,7 +194,8 @@ def handle_arwa_websocket_celery(args):
         print(args)
         args["verbose"] = True
         task = arwa_generator_task.delay(args)
-        task.get(on_message=on_message, propagate=False)
+        join_room(task.id)
+        # task.get(on_message=on_message, propagate=False)
         
     except Exception as e:
         logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
@@ -243,7 +262,8 @@ def arwa():
         parameters = json.loads(request.get_data())
         logger.debug('Sequences are received from Parser')
         task = arwa_generator_task.delay(parameters)
-        print(task.get(on_message=print, propagate=False))
+        # TODO, this is blocking.
+        # print(task.get(on_message=print, propagate=False))
         return jsonify({'task_id': task.id}), 200
     except Exception as e:
         logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
