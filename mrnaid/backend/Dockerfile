@@ -12,22 +12,22 @@ RUN apt-get update -y \
 ENV DEBIAN_FRONTEND=noninteractive
 
 # Create a non-root user
-RUN useradd -m -s /bin/bash docker
+# RUN useradd -m -s /bin/bash docker
 # -m means create a home directory
 
-ENV PATH="/home/docker/.local/bin:${PATH}"
+# ENV PATH="/home/docker/.local/bin:${PATH}"
 
 # Create a new directory for the app and set ownership
-WORKDIR /usr/src/app
-RUN chown docker:docker /usr/src/app
+WORKDIR /app
+COPY requirements.txt .
+# RUN chown docker:docker /usr/src/app
 
 # Copy the files into the container
-COPY --chown=docker:docker . .
-USER docker
+# COPY --chown=docker:docker . .
+# USER docker
 RUN pip install -r ./requirements.txt
 # Switch to the non-root user
 
-# open port 5000
-EXPOSE 5000
+CMD ["/bin/bash"]
 # Your CMD or ENTRYPOINT instruction would go here
 # CMD ["python", "your_script.py"]
