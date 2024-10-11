@@ -11,9 +11,15 @@
     <div>
         {{data.cds|join(', ')}}
     </div>
+    <div>
+        {{data.cds|join('')}}
+    </div>
     <h3>DNA</h3>
     <div>
         {{data.cds|join(', ')|replace('U', 'T')}}
+    </div>
+    <div>
+        {{data.cds|join('')|replace('U', 'T')}}
     </div>
     <h3>Parameters</h3>
     <br>
