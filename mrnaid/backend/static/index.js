@@ -99,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
         console.log('Connected to server');
     });
 
-    socket.on('arwa_sync_progress', (response) => {
+    socket.on('task_update', (response) => {
         console.log('Progress:', response);
         if (response.status == "SUCCESS") {
             console.log('Success:', response.result);
