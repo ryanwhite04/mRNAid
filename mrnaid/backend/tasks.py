@@ -17,9 +17,28 @@ logger = MyLogger(__name__)
 CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', "redis://localhost:6379/0")
 CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', "redis://localhost:6379/1")
 NUMBER_OF_ATTEMPTS = 3
-
+PRIVATE_HOST = os.getenv('PRIVATE_HOST', "http://flask:5000")
+PUBLIC_HOST = os.getenv('PUBLIC_HOST', "http://localhost:5000")
 celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
+sio = Client()
 
+@sio.event
+def connect():
+    print("Celery worker connected to WebSocket")
+
+@sio.event
+def disconnect():
+    print("Celery worker disconnected from WebSocket")
+
+@task_prerun.connect
+def task_prerun_handler(sender=None, **kwargs):
+    if not sio.connected:
+        sio.connect(PRIVATE_HOST)
+
+@task_postrun.connect
+def task_postrun_handler(sender=None, **kwargs):
+    if sio.connected:
+        sio.disconnect()
 
 def init_pool():
     np.random.seed()
@@ -146,8 +165,17 @@ def arwa_generator_task(self, args: dict) -> str:
             # only send progress updates if they are a multiple of 10
             if step["type"] == "progress" and step["step"] % 10 != 0:
                 continue
-            step = {**step, "stability": stability, "cai_threshold": cai_threshold, "cai_exp_scale": cai_exp_scale}
-            self.update_state(state=step["type"], meta=step)
+            result = {**step, "stability": stability, "cai_threshold": cai_threshold, "cai_exp_scale": cai_exp_scale}
+            # self.update_state(state=step["type"], meta=step)
+            sio.emit('task_progress', {'task_id': task_id, 'result': result})
+        # sio.emit('task_progress', {'task_id': task_id, 'status': 'SUCCESS', 'result': step})
+
+        if args["email"]:
+            print("Sending email")
+            subject = "Task Complete"
+            body = f"View the result at {PUBLIC_HOST}/task/{task_id}"
+            send_email(subject, body, args["email"])
+        return result
     except Exception as e:
         logger.error(f"An error occurred: {e}", exc_info=True)
         raise

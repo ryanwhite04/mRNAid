@@ -13,11 +13,12 @@ services:
     restart: always
     volumes:
       - ./logs/:/logs/
+      - .:/app
     environment:
       - CELERY_BROKER_URL=redis://redis:6379
       - CELERY_RESULT_BACKEND=redis://redis:6379
       - LOG_FILE=./logs/logs.log
-      - BACKEND_OBJECTIVES_DATA=../common/objectives/data
+      - BACKEND_OBJECTIVES_DATA=./common/objectives/data
     ports:
       - "5000:5000"
     command: flask run --host 0.0.0.0
@@ -30,16 +31,17 @@ services:
     restart: always
     volumes:
       - ./logs/:/logs/
+      - .:/app
     environment:
       - CELERY_BROKER_URL=redis://redis:6379
       - CELERY_RESULT_BACKEND=redis://redis:6379
       - LOG_FILE=./logs/logs.log
-      - BACKEND_OBJECTIVES_DATA=../common/objectives/data
+      - BACKEND_OBJECTIVES_DATA=./common/objectives/data
     ports:
       - "8000:8000"
-    command: gunicorn -w 4 -b 0.0.0.0:8000 routes:application
+    command: gunicorn -w 1 -b 0.0.0.0:8000 routes:application
     depends_on:
-      - redis
+      - worker
 
   worker:
     build: .
@@ -47,11 +49,14 @@ services:
     restart: always
     volumes:
       - ./logs/:/logs/
+      - .:/app
     environment:
       - CELERY_BROKER_URL=redis://redis:6379
       - CELERY_RESULT_BACKEND=redis://redis:6379
       - LOG_FILE=./logs/logs.log
-      - BACKEND_OBJECTIVES_DATA=../common/objectives/data
+      - BACKEND_OBJECTIVES_DATA=./common/objectives/data
+      - PRIVATE_HOST=${PRIVATE_HOST:-http://flask:5000}
+      - PUBLIC_HOST=${PUBLIC_HOST:-http://localhost:5000}
     command: celery -A tasks worker --loglevel=info
     depends_on:
       - redis
