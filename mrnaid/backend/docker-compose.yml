@@ -66,7 +66,11 @@ services:
     environment:
       - CELERY_BROKER_URL=redis://redis:6379
       - CELERY_RESULT_BACKEND=redis://redis:6379
+    command: <
+      celery flower
+      --basic_auth=${FLOWER_USERNAME?FLOWER_USERNAME not set}:${FLOWER_PASSWORD?FLOWER_PASSWORD not set}
+      --address=0.0.0.0
     ports:
-      - "5555:5555"
+      - 0.0.0.0:5555:5555
     depends_on:
       - redis
