@@ -13,16 +13,16 @@ from common.utils.Datatypes import OptimizationParameters
 from common.utils.Logger import MyLogger
 from common.arw_mrna.src import protein, awalk, vienna, objective_functions as objectives
 from notify import send_email
+from datetime import datetime, timedelta
 
 # Setting up logger
 logger = MyLogger(__name__)
 
-CELERY_BROKER_URL = os.getenv('CELERY_BROKER_URL', "redis://redis:6379/0")
-CELERY_RESULT_BACKEND = os.getenv('CELERY_RESULT_BACKEND', "redis://redis:6379/1")
 NUMBER_OF_ATTEMPTS = 3
 PRIVATE_HOST = os.getenv('PRIVATE_HOST', "http://flask:5000")
 PUBLIC_HOST = os.getenv('PUBLIC_HOST', "http://localhost:5000")
-celery = Celery('tasks', broker=CELERY_BROKER_URL, backend=CELERY_RESULT_BACKEND)
+celery = Celery('tasks')
+celery.config_from_object('celery_config')
 sio = Client()
 
 @sio.event
@@ -177,8 +177,12 @@ def arwa_generator_task(self, args: dict) -> str:
 
         if args["email"]:
             print("Sending email")
+            expiry = datetime.now() + timedelta(days=30)
             subject = "Task Complete"
-            body = f"View the result at {PUBLIC_HOST}/task/{task_id}"
+            body = f"""
+                View the result at {PUBLIC_HOST}/task/{task_id}
+                This link will expire at {expiry.strftime("%Y-%m-%d %H:%M:%S")}
+            """
             send_email(subject, body, args["email"])
         return result
     except Exception as e:
