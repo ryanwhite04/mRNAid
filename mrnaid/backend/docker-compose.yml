@@ -1,5 +1,3 @@
-version: "3.7"
-
 services:
 
   redis:
@@ -23,7 +21,7 @@ services:
       - "5000:5000"
     command: flask run --host 0.0.0.0
     depends_on:
-      - worker
+      - redis
 
   gunicorn:
     build: .
@@ -58,8 +56,6 @@ services:
       - PRIVATE_HOST=${PRIVATE_HOST:-http://flask:5000}
       - PUBLIC_HOST=${PUBLIC_HOST:-http://localhost:5000}
     command: celery -A tasks worker --loglevel=info
-    depends_on:
-      - redis
 
   flower:
     image: mher/flower
