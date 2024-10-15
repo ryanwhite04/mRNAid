@@ -25,13 +25,13 @@ celery = Celery('tasks')
 celery.config_from_object('celery_config')
 sio = Client()
 
-@sio.event
-def connect():
-    print("Celery worker connected to WebSocket")
+# @sio.event
+# def connect():
+#     print("Celery worker connected to WebSocket")
 
-@sio.event
-def disconnect():
-    print("Celery worker disconnected from WebSocket")
+# @sio.event
+# def disconnect():
+#     print("Celery worker disconnected from WebSocket")
 
 @task_prerun.connect
 def task_prerun_handler(sender=None, **kwargs):
@@ -130,65 +130,63 @@ def arwa_generator_task(self, args: dict) -> str:
     logger.info(10 * '#' + 'STARTING PROCESSING THE REQUEST' + 10 * '#')
     logger.info(f"Received request with args: {args}")
     task_id = self.request.id
+    if not sio.connected: sio.connect(PRIVATE_HOST)
     sio.emit('join', {'room': task_id})
-    try:
-        cai_threshold = args["cai_threshold"]
-        cai_exp_scale = args["cai_exp_scale"]
-        # Construct the absolute path to the freq_table file
-        stability = args["stability"]
-        verbose = args["verbose"]
-        freq_table_path = args["freq_table_path"]
-        taxid = freq_table_path if freq_table_path.endswith('.txt') else int(freq_table_path)
-        freq_table = protein.CodonFrequencyTable(taxid)
-        print('FREQ TABLE')
-        print(print(freq_table.__dict__))
-        obj_config = objectives.CAIThresholdObjectiveConfig(
-            freq_table,
-            cai_threshold,
-            cai_exp_scale,
-            verbose=verbose
-        )
-        # Get obj function
-        if stability == 'aup':
-            obj = objectives.make_cai_and_aup_obj(obj_config)
-        elif stability == 'efe':
-            obj = objectives.make_cai_and_efe_obj(obj_config)
-        elif stability == 'none':
-            obj = objectives.make_cai_threshold_obj(obj_config)
-        init_cds = None
-        load_path = args.get("load_path")
-        if load_path is not None:
-            with open(load_path, "rb") as f:
-                init_cds = pickle.load(f).cds
-        # Create walk config]
-        aa_seq = args["aa_seq"]
-        steps = args["steps"]
-        walk_config = awalk.WalkConfig(
-            aa_seq, freq_table, obj, steps, init_cds=init_cds, verbose=verbose)
-        generator = awalk.adaptive_random_walk_generator(walk_config)
-        for step in generator:
-            # only send progress updates if they are a multiple of 10
-            if step["type"] == "progress" and step["step"] % 10 != 0:
-                continue
-            result = {**step, "stability": stability, "cai_threshold": cai_threshold, "cai_exp_scale": cai_exp_scale}
-            # self.update_state(state=step["type"], meta=step)
-            sio.emit('task_progress', {'task_id': task_id, 'result': result})
-        # sio.emit('task_progress', {'task_id': task_id, 'status': 'SUCCESS', 'result': step})
+    cai_threshold = args["cai_threshold"]
+    cai_exp_scale = args["cai_exp_scale"]
+    # Construct the absolute path to the freq_table file
+    stability = args["stability"]
+    verbose = args["verbose"]
+    freq_table_path = args["freq_table_path"]
+    taxid = freq_table_path if freq_table_path.endswith('.txt') else int(freq_table_path)
+    freq_table = protein.CodonFrequencyTable(taxid)
+    # Get obj function
+    obj = {
+        'aup': objectives.make_cai_and_aup_obj,
+        'efe': objectives.make_cai_and_efe_obj,
+        'none': objectives.make_cai_threshold_obj
+    }[stability](objectives.CAIThresholdObjectiveConfig(
+        freq_table,
+        cai_threshold,
+        cai_exp_scale,
+        verbose=verbose
+    ))
+    init_cds = None
+    load_path = args.get("load_path")
+    if load_path is not None:
+        with open(load_path, "rb") as f:
+            init_cds = pickle.load(f).cds
+            
+    # Create walk config]
+    generator = awalk.adaptive_random_walk_generator(awalk.WalkConfig(
+        args["aa_seq"],
+        freq_table,
+        obj,
+        args["steps"],
+        init_cds=init_cds,
+        verbose=verbose
+    ))
+    for step in generator:
+        # only send progress updates if they are a multiple of 10
+        if step["type"] == "progress" and step["step"] % 10 != 0:
+            continue
+        result = {**step, "stability": stability, "cai_threshold": cai_threshold, "cai_exp_scale": cai_exp_scale}
+        # self.update_state(state=step["type"], meta=step)
+        sio.emit('task_progress', {'task_id': task_id, 'result': result})
+    # sio.emit('task_progress', {'task_id': task_id, 'status': 'SUCCESS', 'result': step})
 
-        if args["email"]:
-            print("Sending email")
-            expiry = datetime.now() + timedelta(days=30)
-            subject = "Task Complete"
-            body = f"""
-                View the result at {PUBLIC_HOST}/task/{task_id}
-                This link will expire at {expiry.strftime("%Y-%m-%d %H:%M:%S")}
-            """
-            send_email(subject, body, args["email"])
-        return result
-    except Exception as e:
-        logger.error(f"An error occurred: {e}", exc_info=True)
-        raise
+    if args["email"]:
+        print("Sending email")
+        expiry = datetime.now() + timedelta(days=30)
+        subject = "Task Complete"
+        body = f"""
+            View the result at {PUBLIC_HOST}/task/{task_id}
+            This link will expire at {expiry.strftime("%Y-%m-%d %H:%M:%S")}
+        """
+        send_email(subject, body, args["email"])
     sio.emit('leave', {'room': task_id})
+    if sio.connected: sio.disconnect()
+    return json.dumps(result)
 
 @celery.task()
 def optimization_evaluation_task(parameters: dict) -> str:
