@@ -49,8 +49,8 @@ services:
       - ./logs/:/logs/
       - .:/app
     environment:
-      - CELERY_BROKER_URL=redis://default:${REDIS_PASSWORD?REDIS_PASSWORD not set}@redis:6379
-      - CELERY_RESULT_BACKEND=redis://default:${REDIS_PASSWORD?REDIS_PASSWORD not set}@redis:6379
+      - CELERY_BROKER_URL=redis://default:${REDIS_PASSWORD?REDIS_PASSWORD not set}@${REDIS_ADDRESS}:6379
+      - CELERY_RESULT_BACKEND=redis://default:${REDIS_PASSWORD?REDIS_PASSWORD not set}@${REDIS_ADDRESS}:6379
       - LOG_FILE=./logs/logs.log
       - BACKEND_OBJECTIVES_DATA=./common/objectives/data
       - PRIVATE_HOST=${PRIVATE_HOST:-http://flask:5000}
