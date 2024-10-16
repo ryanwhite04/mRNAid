@@ -1,3 +1,7 @@
+let buffer = {};
+let config = {};
+let next = 0;
+
 document.addEventListener("DOMContentLoaded", () => {
     const socket = io();
     let progressChart;
@@ -95,54 +99,49 @@ document.addEventListener("DOMContentLoaded", () => {
         }
     });
 
+    let next = 0;
+
     socket.on('connect', () => {
         console.log('Connected to server');
     });
 
     socket.on('task_update', (response) => {
-        console.log('Progress:', response);
-        if (response.status == "SUCCESS") {
-            console.log('Success:', response.result);
-            return;
-        }
-        const {
-            type,
-            step,
-            fitness,
-            measures,
-            cds,
-            stability,
-        } = response;
-        if (type == "initial") {
-            resetChart(response);
-        }
-        if (type == "progress") {
-            updateChart(response);
-            updateStep(step);
-        } else if (type === 'new_cds' || type === 'final') {
-            updateCDS(cds);
-            updateStep(step);
-        }
+        // console.log(response);
+        buffer[response.step] = response;
+        next = processBuffer(buffer, next);
     });
+
+    function processBuffer(buffer, next) {
+        while (next in buffer) {
+            applyUpdate(buffer[next]);
+            delete buffer[next];
+            next++;
+        }
+        return next;
+    }
+
+    function applyUpdate(response) {
+        updateChart(response);
+        updateCDS(response.cds);
+        updateStep(response.step);
+    }
 
     socket.on('arwa_sync_error', (response) => {
         const data = response.result;
-        console.error('Error:', data.error);
-        // Handle the error
+        console.error(data.error);
     });
 
-    function updateChart(response) {   
+    function updateChart(response) { 
         const {
             step,
             measures,
-        } = response;     
+        } = response;
         progressData.labels.push(step);
         ["CAI", "AUP", "EFE"].forEach((key, i) => {
             if (key in measures) {
                 progressData.datasets[i].data.push(measures[key]);
             }
         });
-        
         progressChart.update();
     }
     function updateCDS(cds) {
@@ -152,15 +151,16 @@ document.addEventListener("DOMContentLoaded", () => {
 
     function updateStep(step) {
         const currentStepElement = document.getElementById('currentStep');
-        currentStepElement.textContent = step+1;
+        currentStepElement.textContent = step;
     }
 
-    function resetChart(response) {
-        const {
+    function resetChart(config) {
+        let {
+            steps,
             stability,
             cai_threshold,
             cai_exp_scale,
-        } = response;
+        } = config
         // Show relevant datasets based on selection
         progressData.datasets[0].hidden = false; // CAI is always shown
         if (stability === 'aup') {
@@ -190,11 +190,19 @@ document.addEventListener("DOMContentLoaded", () => {
     document.getElementById('arwaForm').addEventListener('submit', (event) => {
         event.preventDefault();
         updateStep(0);
+        next = 0;
         const formData = new FormData(event.target);
         const requestData = Object.fromEntries(formData.entries());
         requestData.cai_threshold = parseFloat(requestData.cai_threshold);
         requestData.cai_exp_scale = parseFloat(requestData.cai_exp_scale);
         requestData.steps = parseInt(requestData.steps, 10);
+        config = {
+            steps: requestData.steps,
+            stability: requestData.stability,
+            cai_threshold: requestData.cai_threshold,
+            cai_exp_scale: requestData.cai_exp_scale,
+        }
+        resetChart(config);
         socket.emit('arwa_websocket_celery', requestData);
     });
 
@@ -204,10 +212,10 @@ document.addEventListener("DOMContentLoaded", () => {
         document.getElementById('freq_table_path').value = "homosapiens.txt";
         document.getElementById('stability').value = "efe";
         document.getElementById('aa_seq').value = "MVSKGEELFTGVVPILVELDGDVNGH";
-        document.getElementById('steps').value = 100;
+        document.getElementById('steps').value = 10;
     });
-    console.log(progressData);
 });
+
 function openPopup() {
     document.getElementById('popup').style.display = 'block';
     document.getElementById('overlay').style.display = 'block';
