@@ -163,18 +163,11 @@ def arwa_generator_task(self, args: dict) -> str:
         freq_table,
         obj,
         args["steps"],
-        init_cds=init_cds,
-        verbose=verbose
-    ))
-    for step in generator:
-        # only send progress updates if they are a multiple of 10
-        if step["type"] == "progress" and step["step"] % 10 != 0:
-            continue
-        result = {**step, "stability": stability, "cai_threshold": cai_threshold, "cai_exp_scale": cai_exp_scale}
-        # self.update_state(state=step["type"], meta=step)
-        sio.emit('task_progress', {'task_id': task_id, 'result': result})
-    # sio.emit('task_progress', {'task_id': task_id, 'status': 'SUCCESS', 'result': step})
-
+    )
+    # Create walk config]
+    result: awalk.WalkResult
+    for result in awalk.adaptive_random_walk(config):
+        sio.call('task_progress', {'task_id': task_id, 'result': result.to_dict()}, timeout=2)
     if args["email"]:
         print("Sending email")
         expiry = datetime.now() + timedelta(days=30)
