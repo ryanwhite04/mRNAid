@@ -16,6 +16,7 @@ services:
       - CELERY_RESULT_BACKEND=redis://default:${REDIS_PASSWORD?REDIS_PASSWORD not set}@redis:6379
       - LOG_FILE=./logs/logs.log
       - BACKEND_OBJECTIVES_DATA=./common/objectives/data
+      - SECRET_KEY=${SECRET_KEY?SECRET_KEY not set}
     ports:
       - "5000:5000"
     command: flask run --host 0.0.0.0
@@ -33,6 +34,7 @@ services:
       - CELERY_RESULT_BACKEND=redis://default:${REDIS_PASSWORD?REDIS_PASSWORD not set}@redis:6379
       - LOG_FILE=./logs/logs.log
       - BACKEND_OBJECTIVES_DATA=./common/objectives/data
+      - SECRET_KEY=${SECRET_KEY?SECRET_KEY not set}
     ports:
       - "8000:8000"
     command: gunicorn -w 1 -b 0.0.0.0:8000 routes:application
