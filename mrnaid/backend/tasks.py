@@ -169,7 +169,6 @@ def arwa_generator_task(self, args: dict) -> str:
     for result in awalk.adaptive_random_walk(config):
         sio.call('task_progress', {'task_id': task_id, 'result': result.to_dict()}, timeout=2)
     if args["email"]:
-        print("Sending email")
         expiry = datetime.now() + timedelta(days=30)
         subject = "Task Complete"
         body = f"""
@@ -177,9 +176,12 @@ def arwa_generator_task(self, args: dict) -> str:
             This link will expire at {expiry.strftime("%Y-%m-%d %H:%M:%S")}
         """
         send_email(subject, body, args["email"])
-    sio.emit('leave', {'room': task_id})
-    if sio.connected: sio.disconnect()
-    return json.dumps(result)
+        logger.info(f"Email sent to {args['email']}")
+    # wait for the last message to be sent
+    
+    sio.call('leave', {'room': task_id})
+    logger.info(f"Final result: {result.to_dict()}")
+    return json.dumps(result.to_dict())
 
 @celery.task()
 def optimization_evaluation_task(parameters: dict) -> str:
