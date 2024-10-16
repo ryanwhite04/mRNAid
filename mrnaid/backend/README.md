@@ -1,3 +1,85 @@
+
+# Development
+
+This project contains a submodule so remember to
+
+```
+git submodule update --init --recursive
+```
+
+# Basic Information
+
+This app has 4 main components
+
+## Flask
+    This is the main server that serves the frontend and the api
+    It also handles the celery tasks
+
+    This can be replaced with *gunicorn* for production
+
+## Worker (Celery Worker)
+
+This is the task queue that runs the arwa algorithm
+It is used to run the arwa algorithm in the background
+It can be scaled to run on multiple servers
+
+It uses redis as the message broker
+It also has a flower dashboard for monitoring tasks
+
+To run locally
+```sh
+celery -A tasks worker --loglevel=info
+```
+
+You can change the amount of workers with the -c flag
+```sh
+celery -A tasks worker -c 4 --loglevel=info
+```
+
+To run in docker
+```sh
+docker compose up worker
+```
+
+If you are running in docker and want more workers
+You have to update the docker-compose.yml file
+For now it's just default because that seems to work fine
+
+## Redis
+    
+To run locally
+```sh
+redis-server
+```
+This requires installing redis locally obviously
+There is some code in here for automatically pulling redis and running it from ./redis folder but it's outdated and didn't work for everyone, easier to just install normally or use docker
+
+To run in docker
+```sh
+docker compose up redis
+```
+
+This is the message broker for celery
+It is used to store the tasks and results
+
+## Flower
+    
+To run locally
+```sh
+celery -A tasks flower
+```
+
+To run in docker
+```sh
+docker compose up flower
+```
+This is a dashboard for monitoring the tasks
+It is useful for debugging tasks and monitoring the workers
+
+It is available on port 5555 by default
+
+You'll need to login with the FLOWER_USERNAME and FLOWER_PASSWORD from the .env file
+
 # Directory Structure
 
 All commands should be run from within this directory, mrnaid/backend
@@ -77,6 +159,13 @@ The other directories are for other features in the original codebase that we ar
 - FLOWER_USERNAME
 - FLOWER_PASSWORD
     Use these to login to the flower dashboard
+- SECRET_KEY
+    secret key for the flask app
+    can be generated with
+    ```python
+    import os
+    os.urandom(24)
+    ```    
 
 # Docker
 
