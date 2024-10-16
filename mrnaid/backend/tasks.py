@@ -39,12 +39,11 @@ def task_postrun_handler(sender=None, **kwargs):
         sio.disconnect()
 
 @celery.task(bind=True)
-def arwa_generator_task(self, args: dict) -> str:
+def arwa_task(self, args: dict) -> str:
     logger.info(10 * '#' + 'STARTING PROCESSING THE REQUEST' + 10 * '#')
     logger.info(f"Received request with args: {args}")
     task_id = self.request.id
-    if not sio.connected: sio.connect(PRIVATE_HOST)
-    sio.emit('join', {'room': task_id})
+    sio.call('join', {'room': task_id})
     cai_threshold = args["cai_threshold"]
     cai_exp_scale = args["cai_exp_scale"]
     # Construct the absolute path to the freq_table file
@@ -64,14 +63,7 @@ def arwa_generator_task(self, args: dict) -> str:
         cai_exp_scale,
         verbose=verbose
     ))
-    init_cds = None
-    load_path = args.get("load_path")
-    if load_path is not None:
-        with open(load_path, "rb") as f:
-            init_cds = pickle.load(f).cds
-            
-    # Create walk config]
-    generator = awalk.adaptive_random_walk_generator(awalk.WalkConfig(
+    config = awalk.WalkConfig(
         args["aa_seq"],
         freq_table,
         obj,

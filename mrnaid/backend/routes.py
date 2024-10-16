@@ -2,24 +2,22 @@ import json
 from flask import Flask, request, render_template, jsonify
 from flask_socketio import SocketIO, emit, join_room, leave_room
 from flask_cors import CORS
-import pickle
-from tasks import optimization_evaluation_task, arwa_generator_task
+from tasks import optimization_evaluation_task, arwa_task
 from common.utils.Exceptions import EmptySequenceError, SequenceLengthError, NoGCError, EntropyWindowError, \
     NumberOfSequencesError, WrongCharSequenceError, RangeError, SpeciesError
 from common.utils.Logger import MyLogger
 from common.utils.RequestParser import RequestParser
-from common.arw_mrna.src import protein, awalk, vienna, objective_functions as objectives
 import python_codon_tables as pct
-from os import getcwd, path, environ
+from os import environ
 from notify import send_email
 app = Flask(__name__)
-app.config['SECRET_KEY'] = environ.get('SECRET_KEY', 'default-secret-key')
+app.config['SECRET_KEY'] = environ.get('SECRET_KEY')
+app.config["TEMPLATES_AUTO_RELOAD"] = True
 socketio = SocketIO(app)
 CORS(app)
 
 # Setting up a logger
 logger = MyLogger(__name__)
-
 
 @app.route('/codon_table', methods=['GET'])
 def codon_table():
@@ -34,6 +32,8 @@ def codon_table_post():
         return jsonify({'error': 'Invalid taxid'}), 400
     # convert the cd dictionary to a json object and return it
     return jsonify(cd)
+
+# test with: curl -X POST -H "Content-Type: application/json" -d '{"taxid": 9606}' http://localhost:5000/codon_table
     
 @app.route('/test_email', methods=['GET'])
 def test_email_form():
@@ -73,7 +73,7 @@ def handle_task_progress(data):
 
 @app.route('/task/<task_id>', methods=['GET'])
 def get_task(task_id):
-    task = arwa_generator_task.AsyncResult(task_id)
+    task = arwa_task.AsyncResult(task_id)
     data = None
     if task.status == "SUCCESS":
         data = task.get()
@@ -106,90 +106,14 @@ def on_leave(data):
 
 @socketio.on('arwa_websocket_celery')
 def handle_arwa_websocket_celery(args):
-    def on_message(body):
-        status = body["status"]
-        if status in ["final", "initial", "progress", "new_cds"]:
-            emit('arwa_sync_progress', body["result"])
     try:
-        print('Socket IO args')
-        print(args)
         args["verbose"] = True
-        task = arwa_generator_task.delay(args)
+        task = arwa_task.delay(args)
         join_room(task.id)
-        # task.get(on_message=on_message, propagate=False)
-        
     except Exception as e:
         logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
         emit('arwa_sync_error', {'error': str(e)})
         
-@socketio.on('arwa_websocket')
-def handle_arwa_sync(args):
-    try:
-        cai_threshold = float(args["cai_threshold"])
-        cai_exp_scale = float(args["cai_exp_scale"])
-        stability = args["stability"]
-        verbose = True
-        freq_table_path = args["freq_table_path"]
-        taxid = freq_table_path if freq_table_path.endswith('.txt') else int(freq_table_path)
-        freq_table = protein.CodonFrequencyTable(taxid)
-        obj_config = objectives.CAIThresholdObjectiveConfig(
-            freq_table,
-            cai_threshold,
-            cai_exp_scale,
-            verbose=verbose
-        )
-
-        # Get obj function
-        if stability == 'aup':
-            obj = objectives.make_cai_and_aup_obj(obj_config)
-        elif stability == 'efe':
-            obj = objectives.make_cai_and_efe_obj(obj_config)
-        elif stability == 'none':
-            obj = objectives.make_cai_threshold_obj(obj_config)
-        
-        init_cds = None
-        load_path = args.get("load_path")
-        if load_path:
-            with open(load_path, "rb") as f:
-                init_cds = pickle.load(f).cds
-            
-        # Create walk config
-        aa_seq = args["aa_seq"]
-        steps = int(args["steps"])
-        walk_config = awalk.WalkConfig(
-            aa_seq, freq_table, obj, steps, init_cds=init_cds, verbose=verbose)
-
-        for update in awalk.adaptive_random_walk_generator(walk_config):
-                        # only send progress updates if they are a multiple of 10
-            if update["type"] == "progress" and update["step"] % 10 != 0:
-                continue
-            update = { **update, "stability": stability, "cai_threshold": cai_threshold, "cai_exp_scale": cai_exp_scale}
-            emit('arwa_sync_progress', update)
-            # Send an email when the task is complete
-            if update["type"] == "final" and args["email"]:
-                print("Sending email")
-                subject = "Task Complete"
-                body = f"{format_args(args)}\n\nCDS: {update['cds']}\nFitness: {update['fitness']}"
-                send_email(subject, body, args["email"])
-                
-    except Exception as e:
-        logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
-        emit('arwa_sync_error', {'error': str(e)})
-    
-@app.route('/api/v1/arwa', methods=['POST'])
-def arwa():
-    logger.info(10 * '#' + 'NEW REQUEST' + 10 * '#')
-    try:
-        parameters = json.loads(request.get_data())
-        logger.debug('Sequences are received from Parser')
-        task = arwa_generator_task.delay(parameters)
-        # TODO, this is blocking.
-        # print(task.get(on_message=print, propagate=False))
-        return jsonify({'task_id': task.id}), 200
-    except Exception as e:
-        logger.error(f'Error handling ARWA request: {str(e)}', exc_info=True)
-        return jsonify({'error': str(e)}), 500
-
 # Defining the routes
 @app.route('/api/v1/optimize', methods=['POST'])
 def optimization():
