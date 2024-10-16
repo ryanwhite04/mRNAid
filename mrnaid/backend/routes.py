@@ -13,7 +13,7 @@ from notify import send_email
 app = Flask(__name__)
 app.config['SECRET_KEY'] = environ.get('SECRET_KEY')
 app.config["TEMPLATES_AUTO_RELOAD"] = True
-socketio = SocketIO(app)
+socketio = SocketIO(app, async_mode='threading')
 CORS(app)
 
 # Setting up a logger
