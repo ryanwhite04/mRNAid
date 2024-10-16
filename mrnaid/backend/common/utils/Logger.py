@@ -14,7 +14,7 @@ def MyLogger(name):
     file = os.environ.get('LOG_FILE')
 
     if file:
-        log_format = "{time:YYYY-MMMM-DD,dddd    HH:mm:ss:A}| {module}| {level}| {message}"
+        log_format = "{time:YYYY-MM-DD HH:mm:ss}| {module}| {level}| {message}"
         logger.add(file, format=log_format, level="DEBUG", backtrace=True, rotation="100 MB", compression="zip",
                    enqueue=True)
     logger.enable(name)

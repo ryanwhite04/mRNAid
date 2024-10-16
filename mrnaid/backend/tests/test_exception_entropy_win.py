@@ -1,6 +1,6 @@
 from tests.test_request_parsing import MockRequest
-from utils.Exceptions import EntropyWindowError
-from utils.RequestParser import RequestParser
+from common.utils.Exceptions import EntropyWindowError
+from common.utils.RequestParser import RequestParser
 
 
 def test_neg_entropy_window():

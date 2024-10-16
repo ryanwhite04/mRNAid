@@ -1,7 +1,7 @@
 import RNA
 import pytest
 from dnachisel import DnaOptimizationProblem
-from objectives.MFE_optimization import MinimizeMFE
+from common.objectives.MFE_optimization import MinimizeMFE
 
 
 @pytest.fixture

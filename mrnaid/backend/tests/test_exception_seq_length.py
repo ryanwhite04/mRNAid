@@ -1,6 +1,6 @@
 from tests.test_request_parsing import MockRequest
-from utils.Exceptions import SequenceLengthError
-from utils.RequestParser import RequestParser
+from common.utils.Exceptions import SequenceLengthError
+from common.utils.RequestParser import RequestParser
 
 
 def test_wrong_sequence_length():

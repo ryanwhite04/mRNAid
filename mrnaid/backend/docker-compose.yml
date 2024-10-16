@@ -1,0 +1,59 @@
+# Shared configuration
+x-shared-config: &shared-config
+  build: .
+  restart: always
+  volumes:
+    - .:/app
+  environment:
+      - CELERY_BROKER_URL=redis://default:${REDIS_PASSWORD}@${REDIS_ADDRESS:-redis}:6379
+      - CELERY_RESULT_BACKEND=redis://default:${REDIS_PASSWORD}@${REDIS_ADDRESS:-redis}:6379
+      - LOG_FILE=./logs/logs.log
+      - BACKEND_OBJECTIVES_DATA=./common/objectives/data
+      - SECRET_KEY=${SECRET_KEY?SECRET_KEY not set}
+      - PRIVATE_HOST=${PRIVATE_HOST:-flask}
+      - PRIVATE_PORT=${PRIVATE_PORT:-5000}
+      - PUBLIC_HOST=${PUBLIC_HOST:-localhost}
+      - PUBLIC_PORT=${PUBLIC_PORT:-5000}
+  depends_on:
+    - redis
+services:
+  redis:
+    image: redis
+    ports:
+      - "6379:6379"
+    command: redis-server --bind 0.0.0.0 --requirepass ${REDIS_PASSWORD?REDIS_PASSWORD not set}
+  flask:
+    <<: *shared-config
+    container_name: flask
+    ports:
+      - "${PUBLIC_PORT}:${PRIVATE_PORT}"
+    command: flask run --host 0.0.0.0 --port ${PRIVATE_PORT}
+  gunicorn:
+    <<: *shared-config
+    container_name: gunicorn
+    ports:
+      - "${PUBLIC_PORT}:${PRIVATE_PORT}"
+    command: >
+      gunicorn
+      --worker-class eventlet
+      -w 1
+      --threads 100
+      --bind 0.0.0.0:${PRIVATE_PORT}
+      app:application
+  worker:
+    <<: *shared-config
+    container_name: worker
+    command: celery -A tasks worker -c 4 --loglevel=info
+  flower:
+    <<: *shared-config
+    container_name: flower
+    command: >
+      celery flower
+      --app=tasks
+      --basic_auth=${FLOWER_USERNAME?FLOWER_USERNAME not set}:${FLOWER_PASSWORD?FLOWER_PASSWORD not set}
+      --address=0.0.0.0
+    ports:
+      - 0.0.0.0:5555:5555
+
+
+  

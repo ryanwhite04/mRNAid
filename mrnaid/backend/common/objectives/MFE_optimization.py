@@ -1,6 +1,6 @@
-from objectives.MFE import MFE
+from common.objectives.MFE import MFE
 from dnachisel import (Specification, SpecEvaluation, Location, DnaOptimizationProblem)
-from utils.Logger import MyLogger
+from common.utils.Logger import MyLogger
 import RNA
 
 logger = MyLogger(__name__)

@@ -1,9 +1,9 @@
 import pytest
 from Bio.Data.CodonTable import TranslationError
-from utils.Exceptions import OptimizationFailedError
-from OptimizationProblems import initialize_optimization_problem
-from OptimizationTask import optimization_task
-from utils.Datatypes import OptimizationParameters
+from common.utils.Exceptions import OptimizationFailedError
+from common.OptimizationProblems import initialize_optimization_problem
+from common.OptimizationTask import optimization_task
+from common.utils.Datatypes import OptimizationParameters
 
 
 @pytest.fixture

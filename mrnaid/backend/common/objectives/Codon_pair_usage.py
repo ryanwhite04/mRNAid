@@ -4,7 +4,7 @@ from statistics import mean
 from typing import Dict, List
 
 from dnachisel import (DnaOptimizationProblem, SpecEvaluation, Location, Specification)
-from utils.Logger import MyLogger
+from common.utils.Logger import MyLogger
 
 logger = MyLogger(__name__)
 

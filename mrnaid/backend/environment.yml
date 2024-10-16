@@ -27,3 +27,4 @@ dependencies:
   - flower
   - sendgrid
   - python-dotenv
+  - eventlet

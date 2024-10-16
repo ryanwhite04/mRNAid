@@ -1,5 +1,5 @@
-from utils.RequestParser import RequestParser
-from utils.Exceptions import SpeciesError
+from common.utils.RequestParser import RequestParser
+from common.utils.Exceptions import SpeciesError
 import pytest
 from tests.test_request_parsing import MockRequest
 

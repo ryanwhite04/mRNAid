@@ -1,9 +1,9 @@
-from constraints.Constraints import Constraints
+from common.constraints.Constraints import Constraints
 from dnachisel import DnaOptimizationProblem
 from dnachisel.Location import Location
-from objectives.Objectives import Objectives
-from utils.Datatypes import OptimizationParameters
-from utils.Exceptions import SpeciesError
+from common.objectives.Objectives import Objectives
+from common.utils.Datatypes import OptimizationParameters
+from common.utils.Exceptions import SpeciesError
 
 
 def initialize_optimization_problem(parameters: OptimizationParameters) -> DnaOptimizationProblem:

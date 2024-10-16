@@ -5,16 +5,18 @@ from typing import Tuple
 import RNA
 from Bio.Seq import Seq
 from Bio.SeqUtils.CodonUsage import CodonAdaptationIndex, SynonymousCodons
+# from Bio.SeqUtils import CodonAdaptionIndex
 from billiard import Pool
 from dnachisel import Location
 from dnachisel import MatchTargetCodonUsage
-from objectives.Codon_pair_usage import MatchTargetCodonPairUsage
-from objectives.Dinucleotide_usage import MatchTargetPairUsage
-from objectives.MFE import MFE
 from python_codon_tables import get_codons_table
-from utils.Datatypes import OptimizationParameters
-from utils.Datatypes import SequenceProperties, EvaluationResults
-from utils.Logger import MyLogger
+
+from common.objectives.Codon_pair_usage import MatchTargetCodonPairUsage
+from common.objectives.Dinucleotide_usage import MatchTargetPairUsage
+from common.objectives.MFE import MFE
+from common.utils.Datatypes import OptimizationParameters
+from common.utils.Datatypes import SequenceProperties, EvaluationResults
+from common.utils.Logger import MyLogger
 
 # setting up a logger
 logger = MyLogger(__name__)

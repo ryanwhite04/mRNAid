@@ -1,0 +1,34 @@
+<!DOCTYPE>
+<html>
+<head>
+    <title>Task {{task.id}}</title>
+</head>
+<body>
+    <h1>Task {{task.id}}</h1>
+    <p>Task status: {{task.status}}</p>
+    <h2>Results</h2>
+    <h3>RNA</h3>
+    <div>
+        {{data.cds|join(', ')}}
+    </div>
+    <div>
+        {{data.cds|join('')}}
+    </div>
+    <h3>DNA</h3>
+    <div>
+        {{data.cds|join(', ')|replace('U', 'T')}}
+    </div>
+    <div>
+        {{data.cds|join('')|replace('U', 'T')}}
+    </div>
+    <h3>Parameters</h3>
+    <br>
+    {% if data.measures is defined and data.measures %}
+        {% for name, value in data.measures.items() %}
+            <div>
+                {{ name }}: {{ value }}
+            </div>
+        {% endfor %}
+    {% endif %}
+</body>
+</html>

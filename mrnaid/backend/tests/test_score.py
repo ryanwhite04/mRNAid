@@ -1,5 +1,5 @@
-from Evaluation import Evaluation
-from utils.Datatypes import OptimizationParameters
+from common.Evaluation import Evaluation
+from common.utils.Datatypes import OptimizationParameters
 import pytest
 
 

@@ -1,7 +1,7 @@
-from OptimizationProblems import initialize_optimization_problem
-from OptimizationTask import optimization_task
-from utils.Datatypes import OptimizationParameters
-from utils.Exceptions import SpeciesError
+from common.OptimizationProblems import initialize_optimization_problem
+from common.OptimizationTask import optimization_task
+from common.utils.Datatypes import OptimizationParameters
+from common.utils.Exceptions import SpeciesError
 
 
 def test_species_error():

@@ -7,23 +7,27 @@ RUN apt-get update -y \
             build-essential pkg-config \
         && apt-get -y clean && apt-get -y autoclean && apt-get -y autoremove
 
-ENV PATH /opt/miniconda/bin:$PATH
 
-RUN useradd docker
-WORKDIR /backend
+# Set environment variables to prevent prompts
+ENV DEBIAN_FRONTEND=noninteractive
 
-COPY ./flask_app/requirements.txt ./flask_app/requirements.txt
+# Create a non-root user
+# RUN useradd -m -s /bin/bash docker
+# -m means create a home directory
 
-#RUN conda env update -n base -f ./flask_app/environment.yml \
-#    && rm -rf /tmp/* \
-#    && conda clean --all
+# ENV PATH="/home/docker/.local/bin:${PATH}"
 
-RUN pip install -r ./flask_app/requirements.txt
+# Create a new directory for the app and set ownership
+WORKDIR /app
+COPY requirements.txt .
+# RUN chown docker:docker /usr/src/app
 
-COPY . /backend
-WORKDIR /backend/flask_app
-RUN chmod 777 /backend/flask_app/logs
+# Copy the files into the container
+# COPY --chown=docker:docker . .
+# USER docker
+RUN pip install -r ./requirements.txt
+# Switch to the non-root user
 
-
-CMD ["uwsgi", "--ini", "app.ini:uwsgi-docker"]
-
+CMD ["/bin/bash"]
+# Your CMD or ENTRYPOINT instruction would go here
+# CMD ["python", "your_script.py"]
