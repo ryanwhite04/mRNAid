@@ -54,7 +54,7 @@ services:
       - BACKEND_OBJECTIVES_DATA=./common/objectives/data
       - PRIVATE_HOST=${PRIVATE_HOST:-http://flask:5000}
       - PUBLIC_HOST=${PUBLIC_HOST:-http://localhost:5000}
-    command: celery -A tasks worker --loglevel=info
+    command: celery -A tasks worker -c 4 --loglevel=info
 
   flower:
     image: mher/flower
