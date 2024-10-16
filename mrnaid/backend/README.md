@@ -9,13 +9,43 @@ git submodule update --init --recursive
 
 # Basic Information
 
-This app has 4 main components
+This app has 5 services
+Before starting gunicorn, flask, or worker, make sure you have the conda environment activated if using conda
+
+You also need redis running for the worker, flask, or flower to run, and the worker needs flask running
 
 ## Flask
-    This is the main server that serves the frontend and the api
-    It also handles the celery tasks
 
-    This can be replaced with *gunicorn* for production
+This is the main server that serves the frontend and the api
+It also handles the celery tasks
+
+This can be replaced with *gunicorn* for production
+
+To run locally
+```sh
+flask run
+```
+
+To run in docker
+```sh
+docker compose up flask
+```
+
+## Gunicorn
+
+This is a production server that can be used to run the flask app
+If you use this instead remember to update the "private_host" and "public_host" in the .env file
+So that they point to the gunicorn port instead of the flask port
+
+To run locally
+```sh
+gunicorn -w 4 -b
+```
+
+To run in docker
+```sh
+docker compose up gunicorn
+```
 
 ## Worker (Celery Worker)
 
@@ -128,7 +158,7 @@ The other directories are for other features in the original codebase that we ar
 - requirements.txt
     This is used by docker so that it doesn't require conda
     can create with
-    ```conda list --format=freeze > requirements.txt```
+    ```python -m pip list --format=freeze > requirements.txt```
 - routes.py
     This is where all the routes are defined
     This includes the routes for the frontend and the api
@@ -151,20 +181,22 @@ The other directories are for other features in the original codebase that we ar
     password of the redis server
     if you don't set this there will be a warning
 - PRIVATE_HOST
-    url of public flask server in subnet
-    for instance, http://flask:5000
+    domain of private flask server in subnet
+    for instance, flask if running in docker or localhost if running locally
+- PRIVATE_PORT
+    port of public flask server
+    for instance 5000
 - PUBLIC_HOST
-    url of public flask server
-    for instance http://localhost:5000
+    url of public flask/gunicorn server
+    for instance localhost if running locally, or the public up of a digital ocean droplet
+- PUBLIC_PORT
+    port of public flask/gunicorn server
+    for instance 5000 if running locally or 80 if running on a server
 - FLOWER_USERNAME
 - FLOWER_PASSWORD
     Use these to login to the flower dashboard
 - SECRET_KEY
-    secret key for the flask app
-    can be generated with
-    ```python
-    import os
-    os.urandom(24)
+    secret key for the flask/gunicorn app
     ```    
 
 # Docker
