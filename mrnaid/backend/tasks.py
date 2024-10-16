@@ -25,13 +25,8 @@ celery = Celery('tasks')
 celery.config_from_object('celery_config')
 sio = Client()
 
-# @sio.event
-# def connect():
-#     print("Celery worker connected to WebSocket")
-
-# @sio.event
-# def disconnect():
-#     print("Celery worker disconnected from WebSocket")
+def init_pool():
+    np.random.seed()
 
 @task_prerun.connect
 def task_prerun_handler(sender=None, **kwargs):
@@ -42,88 +37,6 @@ def task_prerun_handler(sender=None, **kwargs):
 def task_postrun_handler(sender=None, **kwargs):
     if sio.connected:
         sio.disconnect()
-
-def init_pool():
-    np.random.seed()
-
-# @celery.task
-# def ARWA(seconds: int):
-#     try:
-#         # Log start of task
-#         logger.info(f"Starting ARWA task with seconds: {seconds}")
-        
-#         # Simulate a long-running task
-#         time.sleep(seconds)  # Task takes 'seconds' seconds to complete
-        
-#         # Log completion
-#         logger.info("ARWA task completed successfully.")
-#         response = {}
-#         response["message"] = f"Task Completed after {seconds} seconds"
-#         return json.dumps(response)
-#     except Exception as e:
-#         logger.error(f"Error in ARWA task: {str(e)}", exc_info=True)
-#         raise e
-
-@celery.task()
-def ARWA(args: dict) -> str:
-    print("hi")
-    logger.info(10 * '#' + 'STARTING PROCESSING THE REQUEST' + 10 * '#')
-    logger.info(f"Received request with args: {args}")
-    logger.info("STARTING PROCESSING THE REQUEST")
-    logger.info(f"Received request with args: {args}")
-    try:
-        cai_threshold = args["cai_threshold"]
-        cai_exp_scale = args["cai_exp_scale"]
-        # Construct the absolute path to the freq_table file
-        base_path = os.path.dirname(os.path.abspath(__file__))
-        freq_table_path = os.path.join(base_path, 'common', 'arw_mrna', 'codon_tables', args['freq_table_path'])
-        logger.info(f"Looking for freq_table at {freq_table_path}")
-
-        if not os.path.exists(freq_table_path):
-            raise FileNotFoundError(f"The file does not exist: {freq_table_path}")
-
-        # freq_table_path = f"mrnaid/backend/common/arw_mrna/codon_tables/{args['freq_table_path']}"
-        stability = args["stability"]
-        verbose = args["verbose"]
-        freq_table = protein.CodonFrequencyTable(freq_table_path)
-        obj_config = objectives.CAIThresholdObjectiveConfig(
-            freq_table,
-            cai_threshold,
-            cai_exp_scale,
-            verbose=verbose
-        )
-        # Get obj function
-        if stability == 'aup':
-            obj = objectives.make_cai_and_aup_obj(obj_config)
-        elif stability == 'efe':
-            obj = objectives.make_cai_and_efe_obj(obj_config)
-        elif stability == 'none':
-            obj = objectives.make_cai_threshold_obj(obj_config)
-        init_cds = None
-        load_path = args.get("load_path")
-        if load_path is not None:
-            with open(load_path, "rb") as f:
-                init_cds = pickle.load(f).cds
-        # Create walk config]
-        aa_seq = args["aa_seq"]
-        steps = args["steps"]
-        walk_config = awalk.WalkConfig(
-            aa_seq, freq_table, obj, steps, init_cds=init_cds, verbose=verbose)
-        result = awalk.adaptive_random_walk(walk_config)
-        cai = freq_table.codon_adaptation_index(result.cds)
-        aup, efe = vienna.aup_and_efe(vienna.cds_to_rna(result.cds))
-        logger.info(10 * '#' + 'END OF PROCESSING THE REQUEST: SUCCESS' + 10 * '#')
-        logger.info("END OF PROCESSING THE REQUEST: SUCCESS")
-        return json.dumps({
-            'cds': result.cds,
-            'fitness': result.fitness,
-            'cai': cai,
-            'aup': aup,
-            'efe': efe
-        })
-    except Exception as e:
-        logger.error(f"An error occurred: {e}", exc_info=True)
-        raise
 
 @celery.task(bind=True)
 def arwa_generator_task(self, args: dict) -> str:
