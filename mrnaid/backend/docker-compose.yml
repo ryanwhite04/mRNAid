@@ -10,7 +10,6 @@ services:
     container_name: flask
     restart: always
     volumes:
-      - ./logs/:/logs/
       - .:/app
     environment:
       - CELERY_BROKER_URL=redis://default:${REDIS_PASSWORD?REDIS_PASSWORD not set}@redis:6379
@@ -28,7 +27,6 @@ services:
     container_name: gunicorn
     restart: always
     volumes:
-      - ./logs/:/logs/
       - .:/app
     environment:
       - CELERY_BROKER_URL=redis://default:${REDIS_PASSWORD?REDIS_PASSWORD not set}@redis:6379
@@ -46,7 +44,6 @@ services:
     container_name: worker
     restart: always
     volumes:
-      - ./logs/:/logs/
       - .:/app
     environment:
       - CELERY_BROKER_URL=redis://default:${REDIS_PASSWORD?REDIS_PASSWORD not set}@${REDIS_ADDRESS}:6379
