@@ -66,6 +66,10 @@ You can change the amount of workers with the -c flag
 celery -A tasks worker -c 4 --loglevel=info
 ```
 
+By default, any local .env folder will be used to set environmet variables
+So make sure these also work for local development if not running in docker
+And in particular, PRIVATE_HOST is not flask
+
 To run in docker
 ```sh
 docker compose up worker

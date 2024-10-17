@@ -36,7 +36,6 @@ def init_pool():
 @task_prerun.connect
 def task_prerun_handler(sender=None, **kwargs):
     if not sio.connected:
-        logger.info(f"{PUBLIC_URL=}")
         sio.connect(PRIVATE_URL)
 
 @task_postrun.connect
