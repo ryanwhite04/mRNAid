@@ -77,7 +77,7 @@ def get_task(task_id):
     data = None
     if task.status == "SUCCESS":
         data = task.get()
-    return render_template('task.html', task=task, data=data)
+    return render_template('task.html', task=task, data=json.loads(data))
 
 @app.route('/', methods=['GET'])
 def index():
