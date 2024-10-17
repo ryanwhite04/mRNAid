@@ -14,6 +14,8 @@ x-shared-config: &shared-config
       - PRIVATE_PORT=${PRIVATE_PORT:-5000}
       - PUBLIC_HOST=${PUBLIC_HOST:-localhost}
       - PUBLIC_PORT=${PUBLIC_PORT:-5000}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY?SENDGRID_API_KEY not set, go to https://sendgrid.com to get account details}
+      - SENDGRID_EMAIL_USERNAME=${SENDGRID_EMAIL_USERNAME?SENDGRID_EMAIL_USERNAME not set}
   depends_on:
     - redis
 services:
