@@ -66,6 +66,10 @@ You can change the amount of workers with the -c flag
 celery -A tasks worker -c 4 --loglevel=info
 ```
 
+By default, any local .env folder will be used to set environmet variables
+So make sure these also work for local development if not running in docker
+And in particular, PRIVATE_HOST is not flask
+
 To run in docker
 ```sh
 docker compose up worker
@@ -175,7 +179,7 @@ The other directories are for other features in the original codebase that we ar
 - SENDGRID_EMAIL_USERNAME
   get this when signing up on sendgrid
 - REDIS_ADDRESS
-    ip address of the redis server, if running locally this is "flask"
+    ip address of the redis server, if running locally this is "redis"
     if you running a worker on a separate server, you the ip address of the redis server in the private subnet
 - REDIS_PASSWORD
     password of the redis server

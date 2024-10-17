@@ -11,7 +11,7 @@ def MyLogger(name):
     logger.level("INFO", color="<green>")
     logger.level("ERROR", color="<red>")
 
-    file = os.environ.get('LOG_FILE')
+    file = os.environ.get('LOG_FILE', "./logs/logs.log")
 
     if file:
         log_format = "{time:YYYY-MM-DD HH:mm:ss}| {module}| {level}| {message}"

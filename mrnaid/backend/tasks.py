@@ -19,12 +19,13 @@ from datetime import datetime, timedelta
 logger = MyLogger(__name__)
 
 NUMBER_OF_ATTEMPTS = 3
-PRIVATE_HOST = os.getenv('PRIVATE_HOST', "flask")
+PRIVATE_HOST = os.getenv('PRIVATE_HOST', "localhost")
 PRIVATE_PORT = os.getenv('PRIVATE_PORT', 5000)
 PRIVATE_URL = f"http://{PRIVATE_HOST}:{PRIVATE_PORT}"
 PUBLIC_HOST = os.getenv('PUBLIC_HOST', "localhost")
 PUBLIC_PORT = os.getenv('PUBLIC_PORT', 5000)
 PUBLIC_URL = f"http://{PUBLIC_HOST}:{PUBLIC_PORT}"
+logger.info(f"{PUBLIC_URL=}")
 celery = Celery('tasks')
 celery.config_from_object('celery_config')
 sio = Client()
