@@ -175,7 +175,7 @@ The other directories are for other features in the original codebase that we ar
 - SENDGRID_EMAIL_USERNAME
   get this when signing up on sendgrid
 - REDIS_ADDRESS
-    ip address of the redis server, if running locally this is "flask"
+    ip address of the redis server, if running locally this is "redis"
     if you running a worker on a separate server, you the ip address of the redis server in the private subnet
 - REDIS_PASSWORD
     password of the redis server
