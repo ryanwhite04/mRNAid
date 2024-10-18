@@ -5,17 +5,17 @@ x-shared-config: &shared-config
   volumes:
     - .:/app
   environment:
-      - CELERY_BROKER_URL=redis://default:${REDIS_PASSWORD}@${REDIS_ADDRESS:-redis}:6379
-      - CELERY_RESULT_BACKEND=redis://default:${REDIS_PASSWORD}@${REDIS_ADDRESS:-redis}:6379
-      - LOG_FILE=./logs/logs.log
+      - REDIS_ADDRESS=${REDIS_ADDRESS:-redis}
+      - REDIS_PASSWORD=${REDIS_PASSWORD}
+      - LOG_FILE=${LOG_FILE:-./logs/logs.log}
       - BACKEND_OBJECTIVES_DATA=./common/objectives/data
       - SECRET_KEY=${SECRET_KEY?SECRET_KEY not set}
       - PRIVATE_HOST=${PRIVATE_HOST:-flask}
       - PRIVATE_PORT=${PRIVATE_PORT:-5000}
       - PUBLIC_HOST=${PUBLIC_HOST:-localhost}
       - PUBLIC_PORT=${PUBLIC_PORT:-5000}
-      - SENDGRID_API_KEY=${SENDGRID_API_KEY?SENDGRID_API_KEY not set, go to https://sendgrid.com to get account details}
-      - SENDGRID_EMAIL_USERNAME=${SENDGRID_EMAIL_USERNAME?SENDGRID_EMAIL_USERNAME not set}
+      - SENDGRID_API_KEY=${SENDGRID_API_KEY}
+      - SENDGRID_EMAIL_USERNAME=${SENDGRID_EMAIL_USERNAME}
   depends_on:
     - redis
 services:
@@ -26,13 +26,11 @@ services:
     command: redis-server --bind 0.0.0.0 --requirepass ${REDIS_PASSWORD?REDIS_PASSWORD not set}
   flask:
     <<: *shared-config
-    container_name: flask
     ports:
       - "${PUBLIC_PORT}:${PRIVATE_PORT}"
     command: flask run --host 0.0.0.0 --port ${PRIVATE_PORT}
   gunicorn:
     <<: *shared-config
-    container_name: gunicorn
     ports:
       - "${PUBLIC_PORT}:${PRIVATE_PORT}"
     command: >
@@ -44,14 +42,13 @@ services:
       app:application
   worker:
     <<: *shared-config
-    container_name: worker
     command: celery -A tasks worker -c 4 --loglevel=info
   flower:
     <<: *shared-config
-    container_name: flower
     command: >
-      celery flower
+      celery
       --app=tasks
+      flower
       --basic_auth=${FLOWER_USERNAME?FLOWER_USERNAME not set}:${FLOWER_PASSWORD?FLOWER_PASSWORD not set}
       --address=0.0.0.0
     ports:

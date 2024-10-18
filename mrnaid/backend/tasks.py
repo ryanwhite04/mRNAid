@@ -1,31 +1,20 @@
 import json
-import os
 import numpy as np
 from billiard import Pool
 from celery import Celery
 from celery.signals import task_prerun, task_postrun
 from socketio import Client
-import pickle
 from common.Evaluation import Evaluation
 from common.OptimizationProblems import initialize_optimization_problem
 from common.OptimizationTask import optimization_task
 from common.utils.Datatypes import OptimizationParameters
 from common.utils.Logger import MyLogger
-from common.arw_mrna.src import protein, awalk, vienna, objective_functions as objectives
+from common.arw_mrna.src import protein, awalk, objective_functions as objectives
 from notify import send_email
 from datetime import datetime, timedelta
+from config import PRIVATE_URL, PUBLIC_URL, NUMBER_OF_ATTEMPTS
 
-# Setting up logger
 logger = MyLogger(__name__)
-
-NUMBER_OF_ATTEMPTS = 3
-PRIVATE_HOST = os.getenv('PRIVATE_HOST', "localhost")
-PRIVATE_PORT = os.getenv('PRIVATE_PORT', 5000)
-PRIVATE_URL = f"http://{PRIVATE_HOST}:{PRIVATE_PORT}"
-PUBLIC_HOST = os.getenv('PUBLIC_HOST', "localhost")
-PUBLIC_PORT = os.getenv('PUBLIC_PORT', 5000)
-PUBLIC_URL = f"http://{PUBLIC_HOST}:{PUBLIC_PORT}"
-logger.info(f"{PUBLIC_URL=}")
 celery = Celery('tasks')
 celery.config_from_object('celery_config')
 sio = Client()
@@ -35,6 +24,7 @@ def init_pool():
 
 @task_prerun.connect
 def task_prerun_handler(sender=None, **kwargs):
+    logger.info(F"{PRIVATE_URL=}")
     if not sio.connected:
         sio.connect(PRIVATE_URL)
 

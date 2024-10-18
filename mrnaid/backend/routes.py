@@ -8,10 +8,10 @@ from common.utils.Exceptions import EmptySequenceError, SequenceLengthError, NoG
 from common.utils.Logger import MyLogger
 from common.utils.RequestParser import RequestParser
 import python_codon_tables as pct
-from os import environ
 from notify import send_email
+from config import SECRET_KEY
 app = Flask(__name__)
-app.config['SECRET_KEY'] = environ.get('SECRET_KEY')
+app.config['SECRET_KEY'] = SECRET_KEY
 app.config["TEMPLATES_AUTO_RELOAD"] = True
 socketio = SocketIO(app, async_mode='threading')
 CORS(app)
