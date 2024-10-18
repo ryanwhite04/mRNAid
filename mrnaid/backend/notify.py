@@ -1,20 +1,19 @@
 import sendgrid
-from os import getenv
 from sendgrid.helpers.mail import Mail, Email, To, Content
-from dotenv import load_dotenv
-
-load_dotenv()
-api_key = getenv('SENDGRID_API_KEY')
-email_username = getenv('SENDGRID_EMAIL_USERNAME')
-
-sg = sendgrid.SendGridAPIClient(api_key)
+from config import SENDGRID_API_KEY, SENDGRID_EMAIL_USERNAME
 
 def send_email(subject, body, recipient):
-    from_email = Email(email_username, "mRNA Server")  # the verified sender and name
-    # to_email = To(recipient)  # recipients
-    to_email = recipient
+    if SENDGRID_API_KEY == None:
+        print("API_KEY not set, email notifications not enabled")
+        return
+    if SENDGRID_EMAIL_USERNAME == None:
+        print("EMAIL_USERNAME not set, email notifications disabled")
+        return
+    sg = sendgrid.SendGridAPIClient(SENDGRID_API_KEY)
+    from_email = Email(SENDGRID_EMAIL_USERNAME, "mRNA Server")  # the verified sender and name
+    to_email = To(recipient)
     content = Content("text/plain", body)
     mail = Mail(from_email, to_email, subject, content).get()
     
     # Send an HTTP POST request to /mail/send
-    response = sg.client.mail.send.post(request_body=mail)
+    return sg.client.mail.send.post(request_body=mail)

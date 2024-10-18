@@ -172,36 +172,50 @@ The other directories are for other features in the original codebase that we ar
 
 # Environment Setup
 
-.env should include the following
+In order to run the docker containers you need a .env file in the mrnaid/backend folder with the following variables:
 
-- SENDGRID_API_KEY:
-  Can get this when you sign up on sendgrid
-- SENDGRID_EMAIL_USERNAME
-  get this when signing up on sendgrid
-- REDIS_ADDRESS
-    ip address of the redis server, if running locally this is "redis"
-    if you running a worker on a separate server, you the ip address of the redis server in the private subnet
-- REDIS_PASSWORD
-    password of the redis server
-    if you don't set this there will be a warning
-- PRIVATE_HOST
-    domain of private flask server in subnet
-    for instance, flask if running in docker or localhost if running locally
-- PRIVATE_PORT
-    port of public flask server
-    for instance 5000
-- PUBLIC_HOST
-    url of public flask/gunicorn server
-    for instance localhost if running locally, or the public up of a digital ocean droplet
-- PUBLIC_PORT
-    port of public flask/gunicorn server
-    for instance 5000 if running locally or 80 if running on a server
-- FLOWER_USERNAME
-- FLOWER_PASSWORD
-    Use these to login to the flower dashboard
-- SECRET_KEY
-    secret key for the flask/gunicorn app
-    ```    
+```bash
+# Sendgrid api details
+# get these when sign up on sendgrid
+# If not set, app will work but emails won't be sent
+SENDGRID_API_KEY=<api key>
+SENDGRID_EMAIL_USERNAME=<username>
+
+# Redis details
+# ip address of the redis server, if running locally this is "redis"
+# if you running a worker on a separate server, you the ip address of the redis server in the private subnet
+REDIS_ADDRESS=<address>
+
+# password of the redis server
+# if you don't set this there will be a warning, and you can't bind to 0.0.0.0
+REDIS_PASSWORD=<password>
+
+# Flower details
+# Use these to log into flower
+# using credentials because it will be exposed on a digital ocean droplet
+FLOWER_USERNAME=<username>
+FLOWER_PASSWORD=<password>
+
+# Private server details
+# These are the server details the worker will use for it's websocket connection
+# If running locally will just be localhost 5000
+# If running in docker will be flask 5000 or gunicorn 5000
+# If running on digital ocean, use the subnet ip address of the droplet running gunicorn/flask
+PRIVATE_HOST=<ip address>
+PRIVATE_PORT=<port>
+
+# Public server details
+# These are the server details included in the email notifying the client of their finished task
+# If running locally or with docker will just be localhost 5000
+# If running on digital ocean, use the public ip address of the droplet running gunicorn/flask
+# If you have set up a domain name, just use that for the public_host
+PUBLIC_HOST=<ip address or domain name>
+PUBLIC_PORT=<port>
+
+# This is for gunicorn
+# Not actually sure why, just make it a unique random string
+SECRET_KEY=<random string>
+```    
 
 # Docker
 
@@ -211,6 +225,19 @@ docker compose up redis
 docker compose up flower
 docker compose up worker
 docker compose up flask
+```
+
+When Starting docker it will read values in your local .env file by default
+Unless you either supply your own like this
+
+```
+docker compose --env-file .env.custom up worker
+```
+
+or suppling variables manually this
+
+```
+PRIVATE_HOST=gunicorn docker compose up worker
 ```
 
 # Tests
