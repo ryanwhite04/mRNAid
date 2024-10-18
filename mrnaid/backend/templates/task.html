@@ -8,19 +8,19 @@
     <p>Task status: {{task.status}}</p>
     <h2>Results</h2>
     <h3>RNA</h3>
-    <div>
+    <p>
         {{data.cds|join(', ')}}
-    </div>
-    <div>
+    </p>
+    <p>
         {{data.cds|join('')}}
-    </div>
+    </p>
     <h3>DNA</h3>
-    <div>
+    <p>
         {{data.cds|join(', ')|replace('U', 'T')}}
-    </div>
-    <div>
+    </p>
+    <p>
         {{data.cds|join('')|replace('U', 'T')}}
-    </div>
+    </p>
     <h3>Parameters</h3>
     <br>
     {% if data.measures is defined and data.measures %}
@@ -30,5 +30,9 @@
             </div>
         {% endfor %}
     {% endif %}
+
+    <p>
+        This RNA sequence was optimized using the <a href="http://rna.tbi.univie.ac.at/">ViennaRNA package</a>
+    </p>
 </body>
 </html>
