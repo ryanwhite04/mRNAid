@@ -219,7 +219,7 @@ SECRET_KEY=<random string>
 
 # Docker
 
-To build the docker image, run the following command in the root directory of the project:
+To build the docker image, run the following command in the mrnaid/backend directory of the project:
 ```
 docker compose up redis
 docker compose up flower
